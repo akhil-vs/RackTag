@@ -502,10 +502,10 @@
 
       <!-- CART NUMBER -->
       <div class="tab-panel" id="panel-cart" style="display:none;">
-        <div class="template-strip">CRT-MAN1-XXX</div>
+        <div class="template-strip">CRT-MAN1-N</div>
 
         <div class="field" id="cart-xxx-field">
-          <label for="cart-xxx">Cart number (XXX) · 1–999</label>
+          <label for="cart-xxx">Cart number · 1–999</label>
           <input type="number" id="cart-xxx" min="1" max="999" value="1">
           <div class="err-msg">Enter a whole number between 1 and 999.</div>
         </div>
@@ -513,10 +513,10 @@
 
       <!-- CART BIN NUMBER -->
       <div class="tab-panel" id="panel-cartbin" style="display:none;">
-        <div class="template-strip">CRT-MAN1-XXX-Y-Z</div>
+        <div class="template-strip">CRT-MAN1-N-Y-Z</div>
 
         <div class="field" id="cartbin-xxx-field">
-          <label for="cartbin-xxx">Cart number (XXX) · 1–999</label>
+          <label for="cartbin-xxx">Cart number · 1–999</label>
           <input type="number" id="cartbin-xxx" min="1" max="999" value="1">
           <div class="err-msg">Enter a whole number between 1 and 999.</div>
         </div>
@@ -655,7 +655,15 @@
     document.getElementById(fieldId).classList.toggle('error', hasError);
   }
 
-  function pad(n, len){ return String(n).padStart(len,'0'); }
+  function formatNum(n){
+    const v = parseInt(n, 10);
+    return Number.isFinite(v) ? String(v) : '';
+  }
+
+  function normalizeCartInput(el){
+    const v = parseInt(el.value, 10);
+    if(Number.isFinite(v)) el.value = String(v);
+  }
 
   function computeCode(){
     if(activeTab === 'bin'){
@@ -674,7 +682,7 @@
       const ok = Number.isInteger(xxx) && xxx >= 1 && xxx <= 999;
       setError('cart-xxx-field', !ok);
       if(!ok) return null;
-      return `CRT-MAN1-${xxx}`;
+      return `CRT-MAN1-${formatNum(xxx)}`;
     }
     if(activeTab === 'cartbin'){
       const xxx = parseInt(document.getElementById('cartbin-xxx').value, 10);
@@ -683,7 +691,7 @@
       const xxxOk = Number.isInteger(xxx) && xxx >= 1 && xxx <= 999;
       setError('cartbin-xxx-field', !xxxOk);
       if(!xxxOk) return null;
-      return `CRT-MAN1-${xxx}-${y}-${z}`;
+      return `CRT-MAN1-${formatNum(xxx)}-${y}-${formatNum(z)}`;
     }
     if(activeTab === 'scan'){
       const val = document.getElementById('scan-value').value.trim();
@@ -738,7 +746,14 @@
     return code;
   }
 
+  ['cart-xxx', 'cartbin-xxx'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.addEventListener('input', ()=>{ normalizeCartInput(el); refresh(); });
+    el.addEventListener('change', ()=>{ normalizeCartInput(el); refresh(); });
+  });
+
   document.querySelectorAll('input, select').forEach(el=>{
+    if(el.id === 'cart-xxx' || el.id === 'cartbin-xxx') return;
     el.addEventListener('input', refresh);
     el.addEventListener('change', refresh);
   });
