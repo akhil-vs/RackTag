@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RACKTAG — Warehouse Label Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+<style>
+  :root{
+    --concrete:#EDEAE1;
+    --concrete-dark:#DFDBCE;
+    --ink:#1E1E1E;
+    --steel:#23262B;
+    --steel-2:#3A3F46;
+    --yellow:#F5C400;
+    --yellow-deep:#D9A600;
+    --rust:#B8410E;
+    --line:#C9C3B2;
+    --ok:#2F6B3F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--concrete);
+    color:var(--ink);
+    font-family:'IBM Plex Mono', monospace;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Oswald', sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+  }
+  /* header */
+  .topbar{
+    background:var(--steel);
+    color:var(--concrete);
+    padding:22px 28px;
+    position:relative;
+    overflow:hidden;
+    border-bottom:6px solid var(--yellow);
+  }
+  .topbar::after{
+    content:"";
+    position:absolute;
+    top:0; right:0; bottom:0;
+    width:64px;
+    background:repeating-linear-gradient(135deg, var(--yellow) 0 14px, var(--steel) 14px 28px);
+    opacity:0.9;
+  }
+  .topbar .brand{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+  }
+  .topbar h1{
+    font-size:28px;
+    font-weight:700;
+    margin:0;
+    color:var(--concrete);
+  }
+  .topbar .brand small{
+    font-family:'IBM Plex Mono', monospace;
+    text-transform:none;
+    letter-spacing:0;
+    font-size:12px;
+    color:#C9C3B2;
+  }
+  .topbar p{
+    margin:6px 0 0;
+    font-size:12.5px;
+    color:#B9C0C6;
+    max-width:640px;
+    letter-spacing:0.03em;
+  }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:420px 1fr;
+    gap:24px;
+    align-items:start;
+  }
+  @media (max-width:880px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  /* tabs styled like rack shelf dividers */
+  .tabs{
+    display:flex;
+    gap:4px;
+    margin-bottom:-2px;
+  }
+  .tab{
+    flex:1;
+    background:var(--concrete-dark);
+    border:2px solid var(--ink);
+    border-bottom:none;
+    padding:10px 8px;
+    text-align:center;
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    cursor:pointer;
+    color:#6b6656;
+    clip-path:polygon(8% 0, 92% 0, 100% 100%, 0% 100%);
+  }
+  .tab.active{
+    background:var(--yellow);
+    color:var(--ink);
+    position:relative;
+    z-index:2;
+  }
+
+  .panel{
+    background:#fff;
+    border:2px solid var(--ink);
+    padding:20px;
+    position:relative;
+  }
+  .panel-form{ border-top-left-radius:0; }
+
+  .field{ margin-bottom:16px; }
+  .field label{
+    display:block;
+    font-family:'Oswald', sans-serif;
+    font-size:11.5px;
+    font-weight:600;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:#4a4636;
+    margin-bottom:6px;
+  }
+  .field .hint{
+    font-size:10.5px;
+    color:#8a8574;
+    margin-top:4px;
+    letter-spacing:0.02em;
+  }
+  .field input[type=number], .field select{
+    width:100%;
+    padding:9px 10px;
+    border:1.5px solid var(--ink);
+    background:var(--concrete);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .field input:focus, .field select:focus{
+    outline:2px solid var(--yellow-deep);
+    outline-offset:1px;
+  }
+  .field.error input, .field.error select{
+    border-color:var(--rust);
+    background:#FBEDE7;
+  }
+  .field .err-msg{
+    display:none;
+    color:var(--rust);
+    font-size:10.5px;
+    margin-top:4px;
+    font-weight:600;
+  }
+  .field.error .err-msg{ display:block; }
+
+  .btn-group{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .btn-group .opt{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:13px;
+    min-width:34px;
+    text-align:center;
+    padding:8px 6px;
+    border:1.5px solid var(--ink);
+    background:var(--concrete);
+    color:var(--ink);
+    cursor:pointer;
+    user-select:none;
+  }
+  .btn-group .opt:hover{
+    background:var(--concrete-dark);
+  }
+  .btn-group .opt.selected{
+    background:var(--yellow);
+    border-color:var(--ink);
+    box-shadow:inset 0 0 0 2px var(--ink);
+  }
+
+  .field input[type=file]{
+    width:100%;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    padding:8px 0;
+  }
+  #scan-video-wrap{
+    position:relative;
+    margin:14px 0;
+    border:1.5px solid var(--ink);
+    background:#000;
+    overflow:hidden;
+    aspect-ratio:4/3;
+  }
+  #scan-video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .scan-reticle{
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:80%;
+    height:34%;
+    border:2px solid var(--yellow);
+    box-shadow:0 0 0 999px rgba(0,0,0,0.35);
+    pointer-events:none;
+  }
+  .scan-reticle::before, .scan-reticle::after{
+    content:"";
+    position:absolute;
+    width:16px; height:16px;
+    border:3px solid var(--yellow);
+  }
+  .scan-reticle::before{ top:-3px; left:-3px; border-right:none; border-bottom:none; }
+  .scan-reticle::after{ bottom:-3px; right:-3px; border-left:none; border-top:none; }
+  .scan-status{
+    font-size:11.5px;
+    margin-bottom:14px;
+    padding:8px 10px;
+    background:var(--concrete-dark);
+    border-left:4px solid var(--line);
+  }
+  .scan-status.loading{
+    border-left-color:var(--yellow-deep);
+    color:#6b5c00;
+  }
+  .scan-status.success{
+    border-left-color:var(--ok);
+    color:var(--ok);
+    font-weight:600;
+  }
+  .scan-status.fail{
+    border-left-color:var(--rust);
+    color:var(--rust);
+    font-weight:600;
+  }
+
+  .template-strip{
+    font-family:'IBM Plex Mono', monospace;
+    background:var(--steel);
+    color:var(--yellow);
+    padding:10px 12px;
+    font-size:13px;
+    letter-spacing:0.03em;
+    margin-bottom:18px;
+    word-break:break-all;
+    border-left:5px solid var(--yellow);
+  }
+
+  .btn{
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    font-size:12.5px;
+    padding:11px 16px;
+    border:2px solid var(--ink);
+    background:var(--ink);
+    color:var(--concrete);
+    cursor:pointer;
+    transition:transform 0.05s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn:active{ transform:translateY(0); }
+  .btn.secondary{
+    background:transparent;
+    color:var(--ink);
+  }
+  .btn.accent{
+    background:var(--yellow);
+    color:var(--ink);
+    border-color:var(--ink);
+  }
+  .btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+
+  /* preview column */
+  .preview-col{ display:flex; flex-direction:column; gap:20px; }
+  .preview-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+  }
+  .preview-head h2{ font-size:16px; margin:0; }
+  .preview-head span{ font-size:11px; color:#8a8574; }
+
+  .tag-stage{
+    background:var(--steel-2);
+    padding:36px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:340px;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.15) 1px, transparent 1px);
+    background-size:24px 24px;
+  }
+
+  .tag{
+    background:#FBF7E9;
+    width:260px;
+    padding:18px 16px 20px;
+    position:relative;
+    border:2px dashed var(--ink);
+    box-shadow:0 10px 22px rgba(0,0,0,0.35);
+  }
+  .tag::before{
+    content:"";
+    position:absolute;
+    top:12px; left:12px;
+    width:14px; height:14px;
+    border-radius:50%;
+    background:var(--steel-2);
+    box-shadow:inset 0 0 0 2px #FBF7E9, inset 0 0 0 3px var(--ink);
+  }
+  .tag .eyebrow{
+    font-family:'Oswald', sans-serif;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--rust);
+    text-align:center;
+    margin-bottom:10px;
+  }
+  .tag .qr-holder{
+    display:flex;
+    justify-content:center;
+    margin-bottom:12px;
+  }
+  .tag .code{
+    text-align:center;
+    font-weight:600;
+    font-size:14.5px;
+    letter-spacing:0.04em;
+    word-break:break-all;
+  }
+  .tag .ticks{
+    display:flex;
+    justify-content:center;
+    gap:2px;
+    margin-top:10px;
+  }
+  .tag .ticks div{
+    width:2px;
+    background:var(--ink);
+  }
+
+  .status-line{
+    font-size:11.5px;
+    color:#8a8574;
+    text-align:center;
+  }
+  .status-line.ok{ color:var(--ok); font-weight:600; }
+
+  /* batch sheet */
+  .sheet-head{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:10px;
+  }
+  .sheet-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
+    gap:14px;
+    margin-top:14px;
+  }
+  .sheet-item{
+    background:#FBF7E9;
+    border:1.5px dashed var(--ink);
+    padding:10px;
+    position:relative;
+    text-align:center;
+  }
+  .sheet-item .code{
+    font-size:10.5px;
+    font-weight:600;
+    margin-top:6px;
+    word-break:break-all;
+  }
+  .sheet-item .remove{
+    position:absolute;
+    top:4px; right:4px;
+    background:var(--rust);
+    color:#fff;
+    border:none;
+    width:18px; height:18px;
+    font-size:11px;
+    line-height:1;
+    cursor:pointer;
+  }
+  .sheet-empty{
+    font-size:12px;
+    color:#8a8574;
+    padding:20px 0;
+    text-align:center;
+    border:1.5px dashed var(--line);
+  }
+
+  footer{
+    text-align:center;
+    font-size:11px;
+    color:#8a8574;
+    padding:30px 0 40px;
+  }
+
+  /* print sheet */
+  #printSheet{ display:none; }
+  @media print{
+    body *{ visibility:hidden; }
+    #printSheet, #printSheet *{ visibility:visible; }
+    #printSheet{
+      display:grid !important;
+      grid-template-columns:repeat(3, 1fr);
+      gap:14px;
+      position:absolute;
+      top:0; left:0; right:0;
+      padding:20px;
+    }
+    .print-tag{
+      border:1.5px dashed #000;
+      padding:10px;
+      text-align:center;
+      break-inside:avoid;
+    }
+    .print-tag .code{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:11px;
+      font-weight:700;
+      margin-top:6px;
+      word-break:break-all;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <h1>RACKTAG</h1>
+    <small>warehouse label generator</small>
+  </div>
+  <p>Build QR tags for bin locations, carts, and cart bins. Pick the variable segments, print or save the label art.</p>
+</div>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" data-tab="bin">Bin Location</div>
+    <div class="tab" data-tab="cart">Cart Number</div>
+    <div class="tab" data-tab="cartbin">Cart Bin Number</div>
+    <div class="tab" data-tab="scan">From Barcode Photo</div>
+  </div>
+
+  <div class="grid">
+    <!-- FORM PANEL -->
+    <div class="panel panel-form">
+
+      <!-- BIN LOCATION -->
+      <div class="tab-panel" id="panel-bin">
+        <div class="template-strip">P-01-A-XXX-Y-ZZZZ</div>
+
+        <div class="field" id="bin-xxx-field">
+          <label for="bin-xxx">Aisle position (XXX) · 101–113</label>
+          <input type="number" id="bin-xxx" min="101" max="113" value="101">
+          <div class="err-msg">Enter a whole number between 101 and 113.</div>
+        </div>
+
+        <div class="field">
+          <label>Level (Y) · A–N</label>
+          <div class="btn-group" id="bin-y" data-value="A"></div>
+        </div>
+
+        <div class="field" id="bin-zzzz-field">
+          <label for="bin-zzzz">Bin ID (ZZZZ) · 1000–1999</label>
+          <input type="number" id="bin-zzzz" min="1000" max="1999" value="1000">
+          <div class="err-msg">Enter a whole number between 1000 and 1999.</div>
+        </div>
+      </div>
+
+      <!-- CART NUMBER -->
+      <div class="tab-panel" id="panel-cart" style="display:none;">
+        <div class="template-strip">CRT-MAN1-XXX</div>
+
+        <div class="field" id="cart-xxx-field">
+          <label for="cart-xxx">Cart number (XXX) · 1–999</label>
+          <input type="number" id="cart-xxx" min="1" max="999" value="1">
+          <div class="err-msg">Enter a whole number between 1 and 999.</div>
+        </div>
+      </div>
+
+      <!-- CART BIN NUMBER -->
+      <div class="tab-panel" id="panel-cartbin" style="display:none;">
+        <div class="template-strip">CRT-MAN1-XXX-Y-Z</div>
+
+        <div class="field" id="cartbin-xxx-field">
+          <label for="cartbin-xxx">Cart number (XXX) · 1–999</label>
+          <input type="number" id="cartbin-xxx" min="1" max="999" value="1">
+          <div class="err-msg">Enter a whole number between 1 and 999.</div>
+        </div>
+
+        <div class="field">
+          <label>Level (Y) · A–N</label>
+          <div class="btn-group" id="cartbin-y" data-value="A"></div>
+        </div>
+
+        <div class="field">
+          <label>Bin slot (Z) · 1–6</label>
+          <div class="btn-group" id="cartbin-z" data-value="1"></div>
+        </div>
+      </div>
+
+      <!-- SCAN BARCODE PHOTO -->
+      <div class="tab-panel" id="panel-scan" style="display:none;">
+        <div class="template-strip">Decoded from camera</div>
+
+        <div class="field">
+          <label>Camera</label>
+          <div class="btn-row" style="margin-top:0;">
+            <button class="btn accent" id="scanStartBtn" type="button">Start camera</button>
+            <button class="btn secondary" id="scanStopBtn" type="button" disabled>Stop camera</button>
+          </div>
+          <div class="hint">Point the camera at the barcode and hold steady. Works with UPC, EAN, Code 128, Code 39 and similar formats.</div>
+        </div>
+
+        <div id="scan-video-wrap" style="display:none;">
+          <video id="scan-video" playsinline muted></video>
+          <div class="scan-reticle"></div>
+        </div>
+
+        <div id="scan-status" class="scan-status">Camera is off.</div>
+
+        <div class="field" id="scan-value-field">
+          <label for="scan-value">Barcode number</label>
+          <input type="text" id="scan-value" placeholder="Decoded number appears here — or type it manually">
+          <div class="err-msg">Enter or scan a barcode number.</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn accent" id="addToSheetBtn">+ Add to print sheet</button>
+        <button class="btn secondary" id="downloadBtn">Download PNG</button>
+      </div>
+    </div>
+
+    <!-- PREVIEW COLUMN -->
+    <div class="preview-col">
+      <div class="preview-head">
+        <h2>Live label</h2>
+        <span id="typeLabel">Bin location</span>
+      </div>
+
+      <div class="tag-stage">
+        <div class="tag">
+          <div class="eyebrow" id="tagEyebrow">Bin Location</div>
+          <div class="qr-holder" id="qrHolder"></div>
+          <div class="code" id="tagCode">P-01-A-101-A-1000</div>
+          <div class="ticks" id="ticks"></div>
+        </div>
+      </div>
+      <div class="status-line" id="statusLine">Ready</div>
+
+      <!-- BATCH / PRINT SHEET -->
+      <div class="panel">
+        <div class="sheet-head">
+          <h2 style="margin:0;font-size:16px;">Print sheet <span style="font-size:11px;color:#8a8574;font-weight:400;">(<span id="sheetCount">0</span> labels)</span></h2>
+          <div class="btn-row" style="margin:0;">
+            <button class="btn secondary" id="clearSheetBtn">Clear</button>
+            <button class="btn" id="printBtn">Print sheet</button>
+          </div>
+        </div>
+        <div class="sheet-grid" id="sheetGrid">
+          <div class="sheet-empty" id="sheetEmpty">No labels added yet. Build one on the left and hit "Add to print sheet."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>RACKTAG — generate, verify, print. Labels regenerate live as fields change.</footer>
+
+<!-- hidden batch print layout -->
+<div id="printSheet"></div>
+
+<script>
+(function(){
+  // populate button-group selectors (levels A–N, bin slots 1–6)
+  const letters = Array.from({length:14}, (_,i)=>String.fromCharCode(65+i)); // A–N
+  const slots = Array.from({length:6}, (_,i)=>String(i+1)); // 1–6
+
+  function buildButtonGroup(id, values){
+    const group = document.getElementById(id);
+    values.forEach(v=>{
+      const btn = document.createElement('div');
+      btn.className = 'opt' + (v === group.dataset.value ? ' selected' : '');
+      btn.textContent = v;
+      btn.addEventListener('click', ()=>{
+        group.dataset.value = v;
+        group.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        btn.classList.add('selected');
+        refresh();
+      });
+      group.appendChild(btn);
+    });
+  }
+
+  buildButtonGroup('bin-y', letters);
+  buildButtonGroup('cartbin-y', letters);
+  buildButtonGroup('cartbin-z', slots);
+
+  const tabs = document.querySelectorAll('.tab');
+  const panels = { bin:'panel-bin', cart:'panel-cart', cartbin:'panel-cartbin', scan:'panel-scan' };
+  const typeLabels = { bin:'Bin location', cart:'Cart number', cartbin:'Cart bin number', scan:'Scanned barcode' };
+  let activeTab = 'bin';
+
+  tabs.forEach(t=>{
+    t.addEventListener('click', ()=>{
+      tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      Object.values(panels).forEach(id=>document.getElementById(id).style.display='none');
+      if(activeTab === 'scan' && t.dataset.tab !== 'scan' && typeof stopCamera === 'function'){
+        stopCamera();
+      }
+      activeTab = t.dataset.tab;
+      document.getElementById(panels[activeTab]).style.display='block';
+      document.getElementById('typeLabel').textContent = typeLabels[activeTab];
+      document.getElementById('tagEyebrow').textContent = typeLabels[activeTab];
+      refresh();
+    });
+  });
+
+  function setError(fieldId, hasError){
+    document.getElementById(fieldId).classList.toggle('error', hasError);
+  }
+
+  function pad(n, len){ return String(n).padStart(len,'0'); }
+
+  function computeCode(){
+    if(activeTab === 'bin'){
+      const xxx = parseInt(document.getElementById('bin-xxx').value, 10);
+      const y = document.getElementById('bin-y').dataset.value;
+      const zzzz = parseInt(document.getElementById('bin-zzzz').value, 10);
+      const xxxOk = Number.isInteger(xxx) && xxx >= 101 && xxx <= 113;
+      const zzzzOk = Number.isInteger(zzzz) && zzzz >= 1000 && zzzz <= 1999;
+      setError('bin-xxx-field', !xxxOk);
+      setError('bin-zzzz-field', !zzzzOk);
+      if(!xxxOk || !zzzzOk) return null;
+      return `P-01-A-${xxx}-${y}-${zzzz}`;
+    }
+    if(activeTab === 'cart'){
+      const xxx = parseInt(document.getElementById('cart-xxx').value, 10);
+      const ok = Number.isInteger(xxx) && xxx >= 1 && xxx <= 999;
+      setError('cart-xxx-field', !ok);
+      if(!ok) return null;
+      return `CRT-MAN1-${xxx}`;
+    }
+    if(activeTab === 'cartbin'){
+      const xxx = parseInt(document.getElementById('cartbin-xxx').value, 10);
+      const y = document.getElementById('cartbin-y').dataset.value;
+      const z = parseInt(document.getElementById('cartbin-z').dataset.value, 10);
+      const xxxOk = Number.isInteger(xxx) && xxx >= 1 && xxx <= 999;
+      setError('cartbin-xxx-field', !xxxOk);
+      if(!xxxOk) return null;
+      return `CRT-MAN1-${xxx}-${y}-${z}`;
+    }
+    if(activeTab === 'scan'){
+      const val = document.getElementById('scan-value').value.trim();
+      const ok = val.length > 0;
+      setError('scan-value-field', !ok);
+      if(!ok) return null;
+      return val;
+    }
+  }
+
+  function renderQR(container, text, size){
+    container.innerHTML = '';
+    new QRCode(container, {
+      text: text,
+      width: size,
+      height: size,
+      colorDark: '#1E1E1E',
+      colorLight: '#FBF7E9',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+
+  function renderTicks(){
+    const ticks = document.getElementById('ticks');
+    ticks.innerHTML = '';
+    for(let i=0;i<24;i++){
+      const d = document.createElement('div');
+      const h = (i % 5 === 0) ? 14 : 8;
+      d.style.height = h + 'px';
+      ticks.appendChild(d);
+    }
+  }
+  renderTicks();
+
+  const qrHolder = document.getElementById('qrHolder');
+  const tagCode = document.getElementById('tagCode');
+  const statusLine = document.getElementById('statusLine');
+
+  function refresh(){
+    const code = computeCode();
+    if(code){
+      renderQR(qrHolder, code, 150);
+      tagCode.textContent = code;
+      statusLine.textContent = 'Ready to print or save';
+      statusLine.classList.add('ok');
+    } else {
+      qrHolder.innerHTML = '';
+      tagCode.textContent = '—';
+      statusLine.textContent = 'Fix the highlighted field to generate a label';
+      statusLine.classList.remove('ok');
+    }
+    return code;
+  }
+
+  document.querySelectorAll('input, select').forEach(el=>{
+    el.addEventListener('input', refresh);
+    el.addEventListener('change', refresh);
+  });
+
+  refresh();
+
+  // ---- live camera barcode scanning ----
+  const scanVideoWrap = document.getElementById('scan-video-wrap');
+  const scanVideo = document.getElementById('scan-video');
+  const scanStatus = document.getElementById('scan-status');
+  const scanValue = document.getElementById('scan-value');
+  const scanStartBtn = document.getElementById('scanStartBtn');
+  const scanStopBtn = document.getElementById('scanStopBtn');
+
+  let zxReader = null;
+  let scanStream = null;
+
+  function setScanStatus(text, cls){
+    scanStatus.textContent = text;
+    scanStatus.className = 'scan-status' + (cls ? ' ' + cls : '');
+  }
+
+  function stopCamera(){
+    if(zxReader){
+      try{ zxReader.reset(); }catch(e){}
+      zxReader = null;
+    }
+    if(scanStream){
+      scanStream.getTracks().forEach(t=>t.stop());
+      scanStream = null;
+    }
+    scanVideoWrap.style.display = 'none';
+    scanStartBtn.disabled = false;
+    scanStopBtn.disabled = true;
+  }
+
+  function startCamera(){
+    if(typeof ZXing === 'undefined'){
+      setScanStatus('Barcode reader failed to load — type the number manually below.', 'fail');
+      return;
+    }
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      setScanStatus('This browser/context has no camera access (often because this page is inside an embedded preview, or it isn\'t loaded over HTTPS). Open the file directly in its own tab, or type the number manually below.', 'fail');
+      return;
+    }
+    scanStartBtn.disabled = true;
+    scanStopBtn.disabled = false;
+    scanVideoWrap.style.display = 'block';
+    setScanStatus('Starting camera…', 'loading');
+
+    zxReader = new ZXing.BrowserMultiFormatReader();
+    zxReader.decodeFromConstraints(
+      { video: { facingMode: 'environment' } },
+      scanVideo,
+      (result, err)=>{
+        if(scanStream === null && scanVideo.srcObject){
+          scanStream = scanVideo.srcObject;
+        }
+        if(result){
+          scanValue.value = result.getText();
+          setScanStatus('Decoded: ' + result.getText(), 'success');
+          refresh();
+          stopCamera();
+        }
+        // NotFoundException fires continuously while no barcode is in view — ignored.
+      }
+    ).then(()=>{
+      if(scanVideo.srcObject) scanStream = scanVideo.srcObject;
+      if(scanStatus.textContent === 'Starting camera…') setScanStatus('Scanning… hold the barcode inside the frame.', 'loading');
+    }).catch((err)=>{
+      let msg = 'Could not access the camera. Type the number manually below.';
+      const name = err && err.name;
+      if(name === 'NotAllowedError' || name === 'SecurityError'){
+        msg = 'Camera permission was blocked. If you\'re viewing this inside a chat preview, open the file directly in its own browser tab (not the embedded preview) — sandboxed previews can\'t request camera access. Otherwise check your browser\'s site permissions.';
+      } else if(name === 'NotFoundError'){
+        msg = 'No camera was found on this device. Type the number manually below.';
+      } else if(name === 'NotReadableError'){
+        msg = 'The camera is already in use by another app. Close it and try again, or type the number manually.';
+      }
+      setScanStatus(msg, 'fail');
+      stopCamera();
+    });
+  }
+
+  scanStartBtn.addEventListener('click', startCamera);
+  scanStopBtn.addEventListener('click', ()=>{
+    stopCamera();
+    setScanStatus('Camera is off.');
+  });
+
+  // ---- composite canvas for PNG download ----
+  function buildTagCanvas(code, callback){
+    const tmp = document.createElement('div');
+    tmp.style.position='fixed'; tmp.style.left='-9999px';
+    document.body.appendChild(tmp);
+    new QRCode(tmp, { text: code, width: 260, height: 260, colorDark:'#1E1E1E', colorLight:'#FBF7E9', correctLevel: QRCode.CorrectLevel.M });
+
+    setTimeout(()=>{
+      const qrCanvas = tmp.querySelector('canvas');
+      const out = document.createElement('canvas');
+      out.width = 420; out.height = 540;
+      const ctx = out.getContext('2d');
+
+      ctx.fillStyle = '#FBF7E9';
+      ctx.fillRect(0,0,out.width,out.height);
+      ctx.setLineDash([8,6]);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#1E1E1E';
+      ctx.strokeRect(10,10,out.width-20,out.height-20);
+      ctx.setLineDash([]);
+
+      ctx.beginPath();
+      ctx.arc(34,34,10,0,Math.PI*2);
+      ctx.fillStyle = '#3A3F46';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#FBF7E9';
+      ctx.stroke();
+
+      ctx.fillStyle = '#B8410E';
+      ctx.font = '600 16px Oswald, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(typeLabels[activeTab].toUpperCase(), out.width/2, 55);
+
+      if(qrCanvas){
+        ctx.drawImage(qrCanvas, (out.width-260)/2, 75, 260, 260);
+      }
+
+      ctx.fillStyle = '#1E1E1E';
+      ctx.font = '600 22px "IBM Plex Mono", monospace';
+      wrapText(ctx, code, out.width/2, 380, 360, 26);
+
+      document.body.removeChild(tmp);
+      callback(out);
+    }, 60);
+  }
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+    const words = text.split('-');
+    let line = '';
+    const lines = [];
+    words.forEach((w,i)=>{
+      const test = line ? line + '-' + w : w;
+      if(ctx.measureText(test).width > maxWidth && line){
+        lines.push(line);
+        line = w;
+      } else {
+        line = test;
+      }
+    });
+    if(line) lines.push(line);
+    const startY = y - ((lines.length-1)*lineHeight)/2;
+    lines.forEach((l,i)=> ctx.fillText(l, x, startY + i*lineHeight));
+  }
+
+  document.getElementById('downloadBtn').addEventListener('click', ()=>{
+    const code = refresh();
+    if(!code) return;
+    buildTagCanvas(code, (canvas)=>{
+      const a = document.createElement('a');
+      a.download = code + '.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    });
+  });
+
+  // ---- batch print sheet ----
+  const sheet = [];
+  const sheetGrid = document.getElementById('sheetGrid');
+  const sheetEmpty = document.getElementById('sheetEmpty');
+  const sheetCount = document.getElementById('sheetCount');
+  const printSheetEl = document.getElementById('printSheet');
+
+  function renderSheet(){
+    sheetGrid.innerHTML = '';
+    sheetCount.textContent = sheet.length;
+    if(sheet.length === 0){
+      sheetGrid.appendChild(sheetEmpty);
+      printSheetEl.innerHTML = '';
+      return;
+    }
+    sheet.forEach((item, idx)=>{
+      const div = document.createElement('div');
+      div.className = 'sheet-item';
+      const holder = document.createElement('div');
+      div.appendChild(holder);
+      const codeEl = document.createElement('div');
+      codeEl.className = 'code';
+      codeEl.textContent = item.code;
+      const rm = document.createElement('button');
+      rm.className = 'remove';
+      rm.textContent = '×';
+      rm.addEventListener('click', ()=>{ sheet.splice(idx,1); renderSheet(); });
+      div.appendChild(rm);
+      div.appendChild(codeEl);
+      sheetGrid.appendChild(div);
+      renderQR(holder, item.code, 100);
+    });
+
+    // build hidden print layout
+    printSheetEl.innerHTML = '';
+    sheet.forEach(item=>{
+      const cell = document.createElement('div');
+      cell.className = 'print-tag';
+      const holder = document.createElement('div');
+      cell.appendChild(holder);
+      const codeEl = document.createElement('div');
+      codeEl.className = 'code';
+      codeEl.textContent = item.code;
+      cell.appendChild(codeEl);
+      printSheetEl.appendChild(cell);
+      renderQR(holder, item.code, 110);
+    });
+  }
+
+  document.getElementById('addToSheetBtn').addEventListener('click', ()=>{
+    const code = refresh();
+    if(!code) return;
+    if(sheet.some(s=>s.code===code)) return; // avoid duplicates
+    sheet.push({ code, type: activeTab });
+    renderSheet();
+  });
+
+  document.getElementById('clearSheetBtn').addEventListener('click', ()=>{
+    sheet.length = 0;
+    renderSheet();
+  });
+
+  document.getElementById('printBtn').addEventListener('click', ()=>{
+    if(sheet.length === 0) return;
+    window.print();
+  });
+
+  renderSheet();
+})();
+</script>
+</body>
+</html>
