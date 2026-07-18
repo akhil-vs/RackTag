@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
   :root{
     --concrete:#EDEAE1;
@@ -219,6 +220,43 @@
     height:100%;
     object-fit:cover;
     display:block;
+  }
+  #scan-word-layer{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+  }
+  #scan-word-layer.active{
+    pointer-events:auto;
+  }
+  .scan-word-box{
+    position:absolute;
+    padding:0;
+    margin:0;
+    border:2px solid var(--yellow);
+    background:rgba(245,196,0,0.18);
+    color:#fff;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    font-weight:700;
+    line-height:1.1;
+    text-shadow:0 1px 2px rgba(0,0,0,0.85);
+    cursor:pointer;
+    overflow:hidden;
+    display:flex;
+    align-items:flex-end;
+    justify-content:flex-start;
+    text-align:left;
+    box-sizing:border-box;
+  }
+  .scan-word-box:hover{
+    background:rgba(245,196,0,0.42);
+    border-color:#fff;
+  }
+  .scan-word-box.selected{
+    background:rgba(47,107,63,0.55);
+    border-color:#fff;
+    box-shadow:0 0 0 2px var(--ok);
   }
   .scan-reticle{
     position:absolute;
@@ -575,17 +613,27 @@
         <div class="template-strip">Decoded from camera</div>
 
         <div class="field">
+          <label>Scan mode</label>
+          <div class="btn-group" id="scan-mode" data-value="barcode">
+            <div class="opt selected" data-v="barcode">Barcode</div>
+            <div class="opt" data-v="text">Read text</div>
+          </div>
+          <div class="hint" id="scan-mode-hint">Barcode mode — point at a barcode and hold steady.</div>
+        </div>
+
+        <div class="field">
           <label>Camera</label>
           <div class="btn-row" style="margin-top:0;">
             <button class="btn accent" id="scanStartBtn" type="button">Start camera</button>
             <button class="btn secondary" id="scanStopBtn" type="button" disabled>Stop camera</button>
+            <button class="btn accent" id="scanCaptureBtn" type="button" style="display:none;">Scan words</button>
           </div>
-          <div class="hint">Point the camera at the barcode and hold steady. Works with UPC, EAN, Code 128, Code 39 and similar formats.</div>
         </div>
 
         <div id="scan-video-wrap" style="display:none;">
           <video id="scan-video" playsinline muted></video>
-          <div class="scan-reticle"></div>
+          <div id="scan-word-layer"></div>
+          <div class="scan-reticle" id="scan-reticle"></div>
         </div>
 
         <div id="scan-status" class="scan-status">Camera is off.</div>
@@ -596,9 +644,9 @@
         </div>
 
         <div class="field" id="scan-value-field">
-          <label for="scan-value">Barcode number</label>
-          <input type="text" id="scan-value" placeholder="Decoded number appears here — or type it manually">
-          <div class="err-msg">Enter or scan a barcode number.</div>
+          <label for="scan-value">Scanned value</label>
+          <input type="text" id="scan-value" placeholder="Decoded value appears here — or type it manually">
+          <div class="err-msg">Enter or scan a value.</div>
         </div>
       </div>
 
@@ -803,18 +851,44 @@
 
   refresh();
 
-  // ---- live camera barcode scanning ----
+  // ---- live camera barcode + text scanning ----
   const scanVideoWrap = document.getElementById('scan-video-wrap');
   const scanVideo = document.getElementById('scan-video');
+  const scanReticle = document.getElementById('scan-reticle');
+  const scanWordLayer = document.getElementById('scan-word-layer');
   const scanStatus = document.getElementById('scan-status');
   const scanValue = document.getElementById('scan-value');
   const scanStartBtn = document.getElementById('scanStartBtn');
   const scanStopBtn = document.getElementById('scanStopBtn');
+  const scanCaptureBtn = document.getElementById('scanCaptureBtn');
   const scanPicker = document.getElementById('scan-picker');
   const scanPickerList = document.getElementById('scan-picker-list');
+  const scanModeGroup = document.getElementById('scan-mode');
+  const scanModeHint = document.getElementById('scan-mode-hint');
 
   let zxReader = null;
   let scanStream = null;
+  let tesseractWorker = null;
+  let ocrBusy = false;
+
+  const scanModeHints = {
+    barcode: 'Barcode mode — point at a barcode and hold steady. Works with UPC, EAN, Code 128, Code 39 and similar formats.',
+    text: 'Read text mode — point at printed text, tap Scan words, then tap a highlighted word to use it.'
+  };
+
+  scanModeGroup.querySelectorAll('.opt').forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      if(scanStream || zxReader) stopCamera();
+      scanModeGroup.dataset.value = opt.dataset.v;
+      scanModeGroup.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+      opt.classList.add('selected');
+      scanModeHint.textContent = scanModeHints[opt.dataset.v];
+    });
+  });
+
+  function getScanMode(){
+    return scanModeGroup.dataset.value || 'barcode';
+  }
 
   function setScanStatus(text, cls){
     scanStatus.textContent = text;
@@ -832,12 +906,25 @@
     scanPickerList.innerHTML = '';
   }
 
+  function clearWordBoxes(){
+    scanWordLayer.innerHTML = '';
+    scanWordLayer.classList.remove('active');
+  }
+
   function selectScanCode(code){
     scanValue.value = code;
     setScanStatus('Selected: ' + code, 'success');
     scanPickerList.querySelectorAll('.pick').forEach(btn=>{
       btn.classList.toggle('selected', btn.textContent === code);
     });
+    refresh();
+  }
+
+  function selectWord(text, boxEl){
+    scanWordLayer.querySelectorAll('.scan-word-box').forEach(b=>b.classList.remove('selected'));
+    if(boxEl) boxEl.classList.add('selected');
+    scanValue.value = text;
+    setScanStatus('Selected: ' + text, 'success');
     refresh();
   }
 
@@ -869,6 +956,95 @@
     }
   }
 
+  async function terminateTesseract(){
+    if(tesseractWorker){
+      try{ await tesseractWorker.terminate(); }catch(e){}
+      tesseractWorker = null;
+    }
+  }
+
+  async function ensureTesseractWorker(){
+    if(typeof Tesseract === 'undefined'){
+      throw new Error('Text reader failed to load.');
+    }
+    if(!tesseractWorker){
+      setScanStatus('Loading text reader (first time may take a moment)…', 'loading');
+      tesseractWorker = await Tesseract.createWorker('eng');
+    }
+    return tesseractWorker;
+  }
+
+  function captureVideoFrame(){
+    const rect = scanVideoWrap.getBoundingClientRect();
+    const width = Math.round(rect.width);
+    const height = Math.round(rect.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const vw = scanVideo.videoWidth;
+    const vh = scanVideo.videoHeight;
+    const scale = Math.max(width / vw, height / vh);
+    const sw = width / scale;
+    const sh = height / scale;
+    const sx = (vw - sw) / 2;
+    const sy = (vh - sh) / 2;
+    ctx.drawImage(scanVideo, sx, sy, sw, sh, 0, 0, width, height);
+    return { canvas, width, height };
+  }
+
+  function renderWordBoxes(words, width, height){
+    clearWordBoxes();
+    let count = 0;
+    words.forEach(word=>{
+      const text = word.text.trim();
+      if(!text || word.confidence < 20) return;
+      const { x0, y0, x1, y1 } = word.bbox;
+      if(x1 <= x0 || y1 <= y0) return;
+      const box = document.createElement('button');
+      box.type = 'button';
+      box.className = 'scan-word-box';
+      box.textContent = text;
+      box.style.left = (x0 / width * 100) + '%';
+      box.style.top = (y0 / height * 100) + '%';
+      box.style.width = ((x1 - x0) / width * 100) + '%';
+      box.style.height = ((y1 - y0) / height * 100) + '%';
+      box.addEventListener('click', ()=> selectWord(text, box));
+      scanWordLayer.appendChild(box);
+      count++;
+    });
+    if(count > 0) scanWordLayer.classList.add('active');
+    return count;
+  }
+
+  async function captureAndReadText(){
+    if(ocrBusy || !scanStream) return;
+    if(!scanVideo.videoWidth){
+      setScanStatus('Camera is still starting — try again in a moment.', 'fail');
+      return;
+    }
+    ocrBusy = true;
+    scanCaptureBtn.disabled = true;
+    clearWordBoxes();
+    setScanStatus('Reading text… hold steady.', 'loading');
+    try{
+      const worker = await ensureTesseractWorker();
+      const { canvas, width, height } = captureVideoFrame();
+      const { data } = await worker.recognize(canvas);
+      const count = renderWordBoxes(data.words || [], width, height);
+      if(count === 0){
+        setScanStatus('No readable words found — adjust framing and try again.', 'fail');
+      } else {
+        setScanStatus(count + ' word' + (count === 1 ? '' : 's') + ' found — tap a box to use it.', 'success');
+      }
+    }catch(err){
+      setScanStatus('Text scan failed — try again or type the value manually.', 'fail');
+    }finally{
+      ocrBusy = false;
+      scanCaptureBtn.disabled = false;
+    }
+  }
+
   function stopCamera(){
     if(zxReader){
       try{ zxReader.reset(); }catch(e){}
@@ -878,58 +1054,93 @@
       scanStream.getTracks().forEach(t=>t.stop());
       scanStream = null;
     }
+    scanVideo.srcObject = null;
     scanVideoWrap.style.display = 'none';
+    scanReticle.style.display = '';
+    scanCaptureBtn.style.display = 'none';
+    scanCaptureBtn.disabled = false;
+    clearWordBoxes();
+    terminateTesseract();
     scanStartBtn.disabled = false;
     scanStopBtn.disabled = true;
+    ocrBusy = false;
   }
 
-  function startCamera(){
+  function startBarcodeCamera(){
     if(typeof ZXing === 'undefined'){
-      setScanStatus('Barcode reader failed to load — type the number manually below.', 'fail');
+      setScanStatus('Barcode reader failed to load — type the value manually below.', 'fail');
       return;
     }
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-      setScanStatus('This browser/context has no camera access (often because this page is inside an embedded preview, or it isn\'t loaded over HTTPS). Open the file directly in its own tab, or type the number manually below.', 'fail');
-      return;
-    }
-    scanStartBtn.disabled = true;
-    scanStopBtn.disabled = false;
-    scanVideoWrap.style.display = 'block';
-    hideScanPicker();
+    scanReticle.style.display = '';
+    scanCaptureBtn.style.display = 'none';
     setScanStatus('Starting camera…', 'loading');
 
     zxReader = new ZXing.BrowserMultiFormatReader();
     zxReader.decodeFromConstraints(
       { video: { facingMode: 'environment' } },
       scanVideo,
-      (result, err)=>{
+      (result)=>{
         if(scanStream === null && scanVideo.srcObject){
           scanStream = scanVideo.srcObject;
         }
         if(result){
           handleScanResult(result.getText());
         }
-        // NotFoundException fires continuously while no barcode is in view — ignored.
       }
     ).then(()=>{
       if(scanVideo.srcObject) scanStream = scanVideo.srcObject;
       if(scanStatus.textContent === 'Starting camera…') setScanStatus('Scanning… hold the barcode inside the frame.', 'loading');
-    }).catch((err)=>{
-      let msg = 'Could not access the camera. Type the number manually below.';
-      const name = err && err.name;
-      if(name === 'NotAllowedError' || name === 'SecurityError'){
-        msg = 'Camera permission was blocked. If you\'re viewing this inside a chat preview, open the file directly in its own browser tab (not the embedded preview) — sandboxed previews can\'t request camera access. Otherwise check your browser\'s site permissions.';
-      } else if(name === 'NotFoundError'){
-        msg = 'No camera was found on this device. Type the number manually below.';
-      } else if(name === 'NotReadableError'){
-        msg = 'The camera is already in use by another app. Close it and try again, or type the number manually.';
-      }
-      setScanStatus(msg, 'fail');
-      stopCamera();
-    });
+    }).catch(handleCameraError);
+  }
+
+  async function startTextCamera(){
+    scanReticle.style.display = 'none';
+    scanCaptureBtn.style.display = 'inline-block';
+    setScanStatus('Starting camera…', 'loading');
+    try{
+      scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      scanVideo.srcObject = scanStream;
+      await scanVideo.play();
+      setScanStatus('Point at text and tap Scan words.', 'loading');
+    }catch(err){
+      handleCameraError(err);
+    }
+  }
+
+  function handleCameraError(err){
+    let msg = 'Could not access the camera. Type the value manually below.';
+    const name = err && err.name;
+    if(name === 'NotAllowedError' || name === 'SecurityError'){
+      msg = 'Camera permission was blocked. If you\'re viewing this inside a chat preview, open the file directly in its own browser tab (not the embedded preview) — sandboxed previews can\'t request camera access. Otherwise check your browser\'s site permissions.';
+    } else if(name === 'NotFoundError'){
+      msg = 'No camera was found on this device. Type the value manually below.';
+    } else if(name === 'NotReadableError'){
+      msg = 'The camera is already in use by another app. Close it and try again, or type the value manually.';
+    }
+    setScanStatus(msg, 'fail');
+    stopCamera();
+  }
+
+  function startCamera(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      setScanStatus('This browser/context has no camera access (often because this page is inside an embedded preview, or it isn\'t loaded over HTTPS). Open the file directly in its own tab, or type the value manually below.', 'fail');
+      return;
+    }
+    scanStartBtn.disabled = true;
+    scanStopBtn.disabled = false;
+    scanVideoWrap.style.display = 'block';
+    hideScanPicker();
+    clearWordBoxes();
+
+    if(getScanMode() === 'text'){
+      startTextCamera();
+    } else {
+      startBarcodeCamera();
+    }
   }
 
   scanStartBtn.addEventListener('click', startCamera);
+  scanCaptureBtn.addEventListener('click', captureAndReadText);
   scanStopBtn.addEventListener('click', ()=>{
     stopCamera();
     hideScanPicker();
