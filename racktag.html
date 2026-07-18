@@ -626,6 +626,7 @@
           <div class="btn-row" style="margin-top:0;">
             <button class="btn accent" id="scanStartBtn" type="button">Start camera</button>
             <button class="btn secondary" id="scanStopBtn" type="button" disabled>Stop camera</button>
+            <button class="btn accent" id="scanCaptureBtn" type="button" style="display:none;">Scan words</button>
           </div>
         </div>
 
@@ -859,6 +860,7 @@
   const scanValue = document.getElementById('scan-value');
   const scanStartBtn = document.getElementById('scanStartBtn');
   const scanStopBtn = document.getElementById('scanStopBtn');
+  const scanCaptureBtn = document.getElementById('scanCaptureBtn');
   const scanPicker = document.getElementById('scan-picker');
   const scanPickerList = document.getElementById('scan-picker-list');
   const scanModeGroup = document.getElementById('scan-mode');
@@ -868,17 +870,10 @@
   let scanStream = null;
   let tesseractWorker = null;
   let ocrBusy = false;
-  let ocrLoopActive = false;
-  let ocrLoopTimer = null;
-  let ocrCaptureCanvas = null;
-  let selectedWordText = null;
-  let lastWordCount = -1;
-  const OCR_MAX_WIDTH = 640;
-  const OCR_LOOP_GAP_MS = 150;
 
   const scanModeHints = {
     barcode: 'Barcode mode — point at a barcode and hold steady. Works with UPC, EAN, Code 128, Code 39 and similar formats.',
-    text: 'Read text mode — words update live as you move the camera. Tap a highlighted box to use it.'
+    text: 'Read text mode — point at printed text, tap Scan words, then tap a highlighted word to use it.'
   };
 
   scanModeGroup.querySelectorAll('.opt').forEach(opt=>{
@@ -926,7 +921,6 @@
   }
 
   function selectWord(text, boxEl){
-    selectedWordText = text;
     scanWordLayer.querySelectorAll('.scan-word-box').forEach(b=>b.classList.remove('selected'));
     if(boxEl) boxEl.classList.add('selected');
     scanValue.value = text;
@@ -982,14 +976,9 @@
 
   function captureVideoFrame(){
     const rect = scanVideoWrap.getBoundingClientRect();
-    let width = Math.round(rect.width);
-    let height = Math.round(rect.height);
-    if(width > OCR_MAX_WIDTH){
-      height = Math.round(height * OCR_MAX_WIDTH / width);
-      width = OCR_MAX_WIDTH;
-    }
-    if(!ocrCaptureCanvas) ocrCaptureCanvas = document.createElement('canvas');
-    const canvas = ocrCaptureCanvas;
+    const width = Math.round(rect.width);
+    const height = Math.round(rect.height);
+    const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
@@ -1020,7 +1009,6 @@
       box.style.top = (y0 / height * 100) + '%';
       box.style.width = ((x1 - x0) / width * 100) + '%';
       box.style.height = ((y1 - y0) / height * 100) + '%';
-      if(selectedWordText === text) box.classList.add('selected');
       box.addEventListener('click', ()=> selectWord(text, box));
       scanWordLayer.appendChild(box);
       count++;
@@ -1029,59 +1017,35 @@
     return count;
   }
 
-  function updateLiveScanStatus(count){
-    if(count === lastWordCount) return;
-    lastWordCount = count;
-    if(count === 0){
-      setScanStatus('Scanning… move text into view.', 'loading');
-    } else {
-      setScanStatus('Live scan — ' + count + ' word' + (count === 1 ? '' : 's') + ' — tap a box to use it.', 'success');
-    }
-  }
-
-  function stopTextOcrLoop(){
-    ocrLoopActive = false;
-    if(ocrLoopTimer){
-      clearTimeout(ocrLoopTimer);
-      ocrLoopTimer = null;
-    }
-  }
-
-  function scheduleNextOcrScan(delay){
-    if(!ocrLoopActive) return;
-    ocrLoopTimer = setTimeout(runTextOcrScan, delay);
-  }
-
-  async function runTextOcrScan(){
-    if(!ocrLoopActive || ocrBusy || !scanStream || getScanMode() !== 'text') return;
+  async function captureAndReadText(){
+    if(ocrBusy || !scanStream) return;
     if(!scanVideo.videoWidth){
-      scheduleNextOcrScan(300);
+      setScanStatus('Camera is still starting — try again in a moment.', 'fail');
       return;
     }
     ocrBusy = true;
+    scanCaptureBtn.disabled = true;
+    clearWordBoxes();
+    setScanStatus('Reading text… hold steady.', 'loading');
     try{
       const worker = await ensureTesseractWorker();
       const { canvas, width, height } = captureVideoFrame();
       const { data } = await worker.recognize(canvas);
       const count = renderWordBoxes(data.words || [], width, height);
-      updateLiveScanStatus(count);
+      if(count === 0){
+        setScanStatus('No readable words found — adjust framing and try again.', 'fail');
+      } else {
+        setScanStatus(count + ' word' + (count === 1 ? '' : 's') + ' found — tap a box to use it.', 'success');
+      }
     }catch(err){
-      if(ocrLoopActive) setScanStatus('Text scan paused — retrying…', 'loading');
+      setScanStatus('Text scan failed — try again or type the value manually.', 'fail');
     }finally{
       ocrBusy = false;
-      scheduleNextOcrScan(OCR_LOOP_GAP_MS);
+      scanCaptureBtn.disabled = false;
     }
   }
 
-  function startTextOcrLoop(){
-    stopTextOcrLoop();
-    ocrLoopActive = true;
-    lastWordCount = -1;
-    scheduleNextOcrScan(0);
-  }
-
   function stopCamera(){
-    stopTextOcrLoop();
     if(zxReader){
       try{ zxReader.reset(); }catch(e){}
       zxReader = null;
@@ -1093,13 +1057,13 @@
     scanVideo.srcObject = null;
     scanVideoWrap.style.display = 'none';
     scanReticle.style.display = '';
+    scanCaptureBtn.style.display = 'none';
+    scanCaptureBtn.disabled = false;
     clearWordBoxes();
     terminateTesseract();
     scanStartBtn.disabled = false;
     scanStopBtn.disabled = true;
     ocrBusy = false;
-    selectedWordText = null;
-    lastWordCount = -1;
   }
 
   function startBarcodeCamera(){
@@ -1108,6 +1072,7 @@
       return;
     }
     scanReticle.style.display = '';
+    scanCaptureBtn.style.display = 'none';
     setScanStatus('Starting camera…', 'loading');
 
     zxReader = new ZXing.BrowserMultiFormatReader();
@@ -1130,14 +1095,13 @@
 
   async function startTextCamera(){
     scanReticle.style.display = 'none';
+    scanCaptureBtn.style.display = 'inline-block';
     setScanStatus('Starting camera…', 'loading');
     try{
       scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       scanVideo.srcObject = scanStream;
       await scanVideo.play();
-      await ensureTesseractWorker();
-      startTextOcrLoop();
-      setScanStatus('Scanning… move text into view.', 'loading');
+      setScanStatus('Point at text and tap Scan words.', 'loading');
     }catch(err){
       handleCameraError(err);
     }
@@ -1176,6 +1140,7 @@
   }
 
   scanStartBtn.addEventListener('click', startCamera);
+  scanCaptureBtn.addEventListener('click', captureAndReadText);
   scanStopBtn.addEventListener('click', ()=>{
     stopCamera();
     hideScanPicker();
