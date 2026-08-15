@@ -9,6 +9,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(r){ r.unregister(); });
+  });
+}
+if(window.caches){
+  caches.keys().then(function(keys){
+    keys.filter(function(k){ return k.indexOf("racktag") === 0; }).forEach(function(k){ caches.delete(k); });
+  });
+}
+</script>
 <style>
   :root{
     --concrete:#EDEAE1;
