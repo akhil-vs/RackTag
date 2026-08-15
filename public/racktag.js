@@ -3,6 +3,46 @@
   const letters = Array.from({length:14}, (_,i)=>String.fromCharCode(65+i)); // A–N
   const slots = Array.from({length:6}, (_,i)=>String(i+1)); // 1–6
 
+  const SHEET_KEY = 'racktag-print-sheet';
+  const TAB_PREF_KEY = 'racktag-tab-pref';
+  const INSTALL_DISMISS_KEY = 'racktag-install-dismissed';
+
+  function hapticSuccess(){
+    if(navigator.vibrate) navigator.vibrate(50);
+  }
+
+  let wakeLock = null;
+  async function acquireWakeLock(){
+    if(!('wakeLock' in navigator)) return;
+    try{
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', ()=>{ wakeLock = null; });
+    }catch(e){}
+  }
+  async function releaseWakeLock(){
+    if(wakeLock){
+      try{ await wakeLock.release(); }catch(e){}
+      wakeLock = null;
+    }
+  }
+
+  function loadSheet(){
+    try{
+      const raw = localStorage.getItem(SHEET_KEY);
+      if(!raw) return [];
+      const data = JSON.parse(raw);
+      return Array.isArray(data) ? data.filter(i=>i && i.code) : [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  function saveSheet(){
+    try{
+      localStorage.setItem(SHEET_KEY, JSON.stringify(sheet));
+    }catch(e){}
+  }
+
   function buildButtonGroup(id, values){
     const group = document.getElementById(id);
     values.forEach(v=>{
@@ -26,7 +66,12 @@
   const tabs = document.querySelectorAll('.tab');
   const panels = { bin:'panel-bin', cart:'panel-cart', cartbin:'panel-cartbin', scan:'panel-scan' };
   const typeLabels = { bin:'Bin location', cart:'Cart number', cartbin:'Cart bin number', scan:'Scanned barcode' };
-  let activeTab = 'bin';
+  let activeTab = 'scan';
+
+  function switchTab(tabName){
+    const tab = document.querySelector('.tab[data-tab="' + tabName + '"]');
+    if(tab) tab.click();
+  }
 
   tabs.forEach(t=>{
     t.addEventListener('click', ()=>{
@@ -40,9 +85,30 @@
       document.getElementById(panels[activeTab]).style.display='block';
       document.getElementById('typeLabel').textContent = typeLabels[activeTab];
       document.getElementById('tagEyebrow').textContent = typeLabels[activeTab];
+      try{ localStorage.setItem(TAB_PREF_KEY, activeTab); }catch(e){}
+      updateVerifyUI();
       refresh();
     });
   });
+
+  function updateVerifyUI(){
+    const isVerify = getScanMode() === 'verify';
+    document.getElementById('verify-expected-field').style.display = isVerify ? 'block' : 'none';
+    document.getElementById('scan-value-field').style.display = isVerify ? 'none' : 'block';
+    if(!isVerify){
+      document.getElementById('verify-result').style.display = 'none';
+    }
+  }
+
+  function showVerifyResult(match, scanned, expected){
+    const el = document.getElementById('verify-result');
+    el.style.display = 'block';
+    el.className = 'verify-result ' + (match ? 'match' : 'mismatch');
+    el.textContent = match
+      ? 'Match — ' + scanned
+      : 'Mismatch — got "' + scanned + '", expected "' + expected + '"';
+    if(match) hapticSuccess();
+  }
 
   function setError(fieldId, hasError){
     document.getElementById(fieldId).classList.toggle('error', hasError);
@@ -87,6 +153,11 @@
       return `CRT-MAN1-${formatNum(xxx)}-${y}-${formatNum(z)}`;
     }
     if(activeTab === 'scan'){
+      if(getScanMode() === 'verify'){
+        const expected = document.getElementById('verify-expected').value.trim();
+        if(!expected) return null;
+        return expected;
+      }
       const val = document.getElementById('scan-value').value.trim();
       const ok = val.length > 0;
       setError('scan-value-field', !ok);
@@ -175,7 +246,8 @@
 
   const scanModeHints = {
     barcode: 'Barcode mode — point at a barcode and hold steady. Works with UPC, EAN, Code 128, Code 39 and similar formats.',
-    text: 'Read text mode — point at printed text, tap Scan words, then tap a highlighted word to use it.'
+    text: 'Read text mode — point at printed text, tap Scan words, then tap a highlighted word to use it.',
+    verify: 'Verify mode — enter the expected code, scan the printed label, and confirm it matches.'
   };
 
   scanModeGroup.querySelectorAll('.opt').forEach(opt=>{
@@ -185,6 +257,7 @@
       scanModeGroup.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
       opt.classList.add('selected');
       scanModeHint.textContent = scanModeHints[opt.dataset.v];
+      updateVerifyUI();
     });
   });
 
@@ -219,6 +292,12 @@
     scanPickerList.querySelectorAll('.pick').forEach(btn=>{
       btn.classList.toggle('selected', btn.textContent === code);
     });
+    if(getScanMode() === 'verify'){
+      const expected = document.getElementById('verify-expected').value.trim();
+      if(expected) showVerifyResult(code === expected, code, expected);
+    } else {
+      hapticSuccess();
+    }
     refresh();
   }
 
@@ -227,6 +306,12 @@
     if(boxEl) boxEl.classList.add('selected');
     scanValue.value = text;
     setScanStatus('Selected: ' + text, 'success');
+    if(getScanMode() === 'verify'){
+      const expected = document.getElementById('verify-expected').value.trim();
+      if(expected) showVerifyResult(text === expected, text, expected);
+    } else {
+      hapticSuccess();
+    }
     refresh();
   }
 
@@ -248,10 +333,22 @@
     const codes = parseScanCodes(text);
     if(codes.length === 0) return;
     stopCamera();
+    if(getScanMode() === 'verify'){
+      const expected = document.getElementById('verify-expected').value.trim();
+      const scanned = codes[0];
+      if(!expected){
+        setScanStatus('Enter the expected code before scanning.', 'fail');
+        return;
+      }
+      showVerifyResult(scanned === expected, scanned, expected);
+      setScanStatus(scanned === expected ? 'Verified: ' + scanned : 'Mismatch detected.', scanned === expected ? 'success' : 'fail');
+      return;
+    }
     if(codes.length === 1){
       scanValue.value = codes[0];
       hideScanPicker();
       setScanStatus('Decoded: ' + codes[0], 'success');
+      hapticSuccess();
       refresh();
     } else {
       showScanPicker(codes);
@@ -267,7 +364,10 @@
 
   async function ensureTesseractWorker(){
     if(typeof Tesseract === 'undefined'){
-      throw new Error('Text reader failed to load.');
+      throw new Error('Text reader failed to load. Connect to the network and reload the page.');
+    }
+    if(!navigator.onLine){
+      throw new Error('Text reader requires a network connection on first use.');
     }
     if(!tesseractWorker){
       setScanStatus('Loading text reader (first time may take a moment)…', 'loading');
@@ -340,7 +440,13 @@
         setScanStatus(count + ' word' + (count === 1 ? '' : 's') + ' found — tap a box to use it.', 'success');
       }
     }catch(err){
-      setScanStatus('Text scan failed — try again or type the value manually.', 'fail');
+      const offline = !navigator.onLine || (err && err.message && err.message.includes('network'));
+      setScanStatus(
+        offline
+          ? 'Text reader needs a network connection. Connect to load it, or type the value manually.'
+          : 'Text scan failed — try again or type the value manually.',
+        'fail'
+      );
     }finally{
       ocrBusy = false;
       scanCaptureBtn.disabled = false;
@@ -348,6 +454,7 @@
   }
 
   function stopCamera(){
+    releaseWakeLock();
     if(zxReader){
       try{ zxReader.reset(); }catch(e){}
       zxReader = null;
@@ -428,11 +535,19 @@
       setScanStatus('This browser/context has no camera access (often because this page is inside an embedded preview, or it isn\'t loaded over HTTPS). Open the file directly in its own tab, or type the value manually below.', 'fail');
       return;
     }
+    if(getScanMode() === 'verify'){
+      const expected = document.getElementById('verify-expected').value.trim();
+      if(!expected){
+        setScanStatus('Enter the expected code before starting the camera.', 'fail');
+        return;
+      }
+    }
     scanStartBtn.disabled = true;
     scanStopBtn.disabled = false;
     scanVideoWrap.style.display = 'block';
     hideScanPicker();
     clearWordBoxes();
+    acquireWakeLock();
 
     if(getScanMode() === 'text'){
       startTextCamera();
@@ -449,8 +564,24 @@
     setScanStatus('Camera is off.');
   });
 
+  document.getElementById('verify-expected').addEventListener('input', refresh);
+  document.getElementById('verifyUseCurrentBtn').addEventListener('click', ()=>{
+    const current = document.getElementById('tagCode').textContent.trim();
+    if(current && current !== '—'){
+      document.getElementById('verify-expected').value = current;
+      refresh();
+      return;
+    }
+    const scanned = document.getElementById('scan-value').value.trim();
+    if(scanned){
+      document.getElementById('verify-expected').value = scanned;
+      refresh();
+    }
+  });
+
   // ---- composite canvas for PNG download ----
-  function buildTagCanvas(code, callback){
+  function buildTagCanvas(code, callback, labelType){
+    const typeLabel = typeLabels[labelType || activeTab] || 'Label';
     const tmp = document.createElement('div');
     tmp.style.position='fixed'; tmp.style.left='-9999px';
     document.body.appendChild(tmp);
@@ -481,7 +612,7 @@
       ctx.fillStyle = '#B8410E';
       ctx.font = '600 16px Oswald, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(typeLabels[activeTab].toUpperCase(), out.width/2, 55);
+      ctx.fillText(typeLabel.toUpperCase(), out.width/2, 55);
 
       if(qrCanvas){
         ctx.drawImage(qrCanvas, (out.width-260)/2, 75, 260, 260);
@@ -495,6 +626,29 @@
       callback(out);
     }, 60);
   }
+
+  function downloadCanvas(canvas, filename){
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+
+  document.getElementById('downloadBtn').addEventListener('click', ()=>{
+    const code = refresh();
+    if(!code) return;
+    buildTagCanvas(code, (canvas)=> downloadCanvas(canvas, code + '.png'));
+  });
+
+  document.getElementById('mobileAddBtn').addEventListener('click', ()=>{
+    document.getElementById('addToSheetBtn').click();
+  });
+  document.getElementById('mobileDownloadBtn').addEventListener('click', ()=>{
+    document.getElementById('downloadBtn').click();
+  });
+  document.getElementById('mobilePrintBtn').addEventListener('click', ()=>{
+    document.getElementById('printBtn').click();
+  });
 
   function wrapText(ctx, text, x, y, maxWidth, lineHeight){
     const words = text.split('-');
@@ -514,27 +668,56 @@
     lines.forEach((l,i)=> ctx.fillText(l, x, startY + i*lineHeight));
   }
 
-  document.getElementById('downloadBtn').addEventListener('click', ()=>{
-    const code = refresh();
-    if(!code) return;
-    buildTagCanvas(code, (canvas)=>{
-      const a = document.createElement('a');
-      a.download = code + '.png';
-      a.href = canvas.toDataURL('image/png');
-      a.click();
-    });
-  });
-
   // ---- batch print sheet ----
-  const sheet = [];
+  const sheet = loadSheet();
   const sheetGrid = document.getElementById('sheetGrid');
   const sheetEmpty = document.getElementById('sheetEmpty');
   const sheetCount = document.getElementById('sheetCount');
   const printSheetEl = document.getElementById('printSheet');
+  const printOneSheetEl = document.getElementById('printOneSheet');
+  let previewItem = null;
+
+  function openSheetPreview(item){
+    previewItem = item;
+    document.getElementById('sheetPreviewModal').style.display = 'flex';
+    document.getElementById('sheetPreviewEyebrow').textContent = typeLabels[item.type] || 'Label';
+    document.getElementById('sheetPreviewCode').textContent = item.code;
+    renderQR(document.getElementById('sheetPreviewQr'), item.code, 150);
+  }
+
+  function closeSheetPreview(){
+    previewItem = null;
+    document.getElementById('sheetPreviewModal').style.display = 'none';
+  }
+
+  document.getElementById('sheetPreviewClose').addEventListener('click', closeSheetPreview);
+  document.getElementById('sheetPreviewBackdrop').addEventListener('click', closeSheetPreview);
+  document.getElementById('sheetPreviewDownload').addEventListener('click', ()=>{
+    if(!previewItem) return;
+    buildTagCanvas(previewItem.code, (canvas)=> downloadCanvas(canvas, previewItem.code + '.png'), previewItem.type);
+  });
+  document.getElementById('sheetPreviewPrintOne').addEventListener('click', ()=>{
+    if(!previewItem) return;
+    printOneSheetEl.innerHTML = '';
+    const cell = document.createElement('div');
+    cell.className = 'print-tag';
+    const holder = document.createElement('div');
+    cell.appendChild(holder);
+    const codeEl = document.createElement('div');
+    codeEl.className = 'code';
+    codeEl.textContent = previewItem.code;
+    cell.appendChild(codeEl);
+    printOneSheetEl.appendChild(cell);
+    renderQR(holder, previewItem.code, 160);
+    document.body.classList.add('print-one');
+    window.print();
+    document.body.classList.remove('print-one');
+  });
 
   function renderSheet(){
     sheetGrid.innerHTML = '';
     sheetCount.textContent = sheet.length;
+    saveSheet();
     if(sheet.length === 0){
       sheetGrid.appendChild(sheetEmpty);
       printSheetEl.innerHTML = '';
@@ -543,6 +726,10 @@
     sheet.forEach((item, idx)=>{
       const div = document.createElement('div');
       div.className = 'sheet-item';
+      div.addEventListener('click', (e)=>{
+        if(e.target.classList.contains('remove')) return;
+        openSheetPreview(item);
+      });
       const holder = document.createElement('div');
       div.appendChild(holder);
       const codeEl = document.createElement('div');
@@ -550,8 +737,13 @@
       codeEl.textContent = item.code;
       const rm = document.createElement('button');
       rm.className = 'remove';
+      rm.type = 'button';
       rm.textContent = '×';
-      rm.addEventListener('click', ()=>{ sheet.splice(idx,1); renderSheet(); });
+      rm.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        sheet.splice(idx,1);
+        renderSheet();
+      });
       div.appendChild(rm);
       div.appendChild(codeEl);
       sheetGrid.appendChild(div);
@@ -591,6 +783,75 @@
     if(sheet.length === 0) return;
     window.print();
   });
+
+  document.getElementById('shareSheetBtn').addEventListener('click', async ()=>{
+    if(sheet.length === 0) return;
+    const text = 'RackTag print sheet\n\n' + sheet.map(s=>s.code).join('\n');
+    if(navigator.share){
+      try{
+        await navigator.share({ title: 'RackTag print sheet', text });
+        return;
+      }catch(e){
+        if(e.name === 'AbortError') return;
+      }
+    }
+    try{
+      await navigator.clipboard.writeText(text);
+      statusLine.textContent = 'Sheet copied to clipboard';
+      statusLine.classList.add('ok');
+      setTimeout(()=> refresh(), 2000);
+    }catch(e){
+      statusLine.textContent = 'Could not share or copy sheet';
+      statusLine.classList.remove('ok');
+    }
+  });
+
+  // ---- PWA install prompt ----
+  let deferredInstallPrompt = null;
+  const installBanner = document.getElementById('installBanner');
+  const installBtn = document.getElementById('installBtn');
+  const installDismissBtn = document.getElementById('installDismissBtn');
+
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    if(localStorage.getItem(INSTALL_DISMISS_KEY)) return;
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    installBanner.style.display = 'flex';
+  });
+
+  installBtn.addEventListener('click', async ()=>{
+    if(!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    installBanner.style.display = 'none';
+  });
+
+  installDismissBtn.addEventListener('click', ()=>{
+    try{ localStorage.setItem(INSTALL_DISMISS_KEY, '1'); }catch(e){}
+    installBanner.style.display = 'none';
+  });
+
+  // ---- default to scan on mobile ----
+  (function initMobileDefaults(){
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    let pref = null;
+    try{ pref = localStorage.getItem(TAB_PREF_KEY); }catch(e){}
+    if(pref && panels[pref]){
+      switchTab(pref);
+    } else if(isMobile){
+      switchTab('scan');
+      const autoScan = !localStorage.getItem('racktag-auto-scan-done');
+      if(autoScan && scanStartBtn){
+        try{ localStorage.setItem('racktag-auto-scan-done', '1'); }catch(e){}
+        setTimeout(()=>{
+          if(activeTab === 'scan' && getScanMode() !== 'verify') scanStartBtn.click();
+        }, 600);
+      }
+    }
+    updateVerifyUI();
+    refresh();
+  })();
 
   renderSheet();
 })();

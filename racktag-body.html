@@ -1,3 +1,10 @@
+<div id="installBanner" class="install-banner" style="display:none;">
+  <span>Install RackTag for warehouse floor use.</span>
+  <div class="install-banner-actions">
+    <button class="btn accent" id="installBtn" type="button">Install</button>
+    <button class="btn secondary" id="installDismissBtn" type="button">Not now</button>
+  </div>
+</div>
 
 <div class="topbar">
   <div class="brand">
@@ -9,18 +16,72 @@
 
 <div class="wrap">
   <div class="tabs">
-    <div class="tab active" data-tab="bin">Bin Location</div>
+    <div class="tab active" data-tab="scan">Scan</div>
+    <div class="tab" data-tab="bin">Bin Location</div>
     <div class="tab" data-tab="cart">Cart Number</div>
-    <div class="tab" data-tab="cartbin">Cart Bin Number</div>
-    <div class="tab" data-tab="scan">From Barcode Photo</div>
+    <div class="tab" data-tab="cartbin">Cart Bin</div>
   </div>
 
   <div class="grid">
     <!-- FORM PANEL -->
     <div class="panel panel-form">
 
+      <!-- SCAN BARCODE PHOTO -->
+      <div class="tab-panel" id="panel-scan">
+        <div class="template-strip">Decoded from camera</div>
+
+        <div class="field">
+          <label>Scan mode</label>
+          <div class="btn-group" id="scan-mode" data-value="barcode">
+            <div class="opt selected" data-v="barcode">Barcode</div>
+            <div class="opt" data-v="text">Read text</div>
+            <div class="opt" data-v="verify">Verify</div>
+          </div>
+          <div class="hint" id="scan-mode-hint">Barcode mode — point at a barcode and hold steady.</div>
+        </div>
+
+        <div class="field" id="verify-expected-field" style="display:none;">
+          <label for="verify-expected">Expected code to verify</label>
+          <div class="btn-row" style="margin-top:0;margin-bottom:6px;">
+            <button class="btn secondary" id="verifyUseCurrentBtn" type="button">Use current label</button>
+          </div>
+          <input type="text" id="verify-expected" placeholder="Code from live label or print sheet">
+          <div class="hint">Scan a printed label — green means it matches, red means mismatch.</div>
+        </div>
+
+        <div id="verify-result" class="verify-result" style="display:none;"></div>
+
+        <div class="field">
+          <label>Camera</label>
+          <div class="btn-row" style="margin-top:0;">
+            <button class="btn accent" id="scanStartBtn" type="button">Start camera</button>
+            <button class="btn secondary" id="scanStopBtn" type="button" disabled>Stop camera</button>
+            <button class="btn accent" id="scanCaptureBtn" type="button" style="display:none;">Scan words</button>
+          </div>
+        </div>
+
+        <div id="scan-video-wrap" style="display:none;">
+          <video id="scan-video" playsinline muted></video>
+          <div id="scan-word-layer"></div>
+          <div class="scan-reticle" id="scan-reticle"></div>
+        </div>
+
+        <div id="scan-status" class="scan-status">Camera is off.</div>
+
+        <div id="scan-picker" class="scan-picker" style="display:none;">
+          <label>Multiple codes detected — choose one</label>
+          <div id="scan-picker-list" class="scan-picker-list"></div>
+        </div>
+
+        <div class="field" id="scan-value-field">
+          <label for="scan-value">Scanned value</label>
+          <input type="text" id="scan-value" placeholder="Decoded value appears here — or type it manually">
+          <div class="err-msg">Enter or scan a value.</div>
+        </div>
+      </div>
+
       <!-- BIN LOCATION -->
-      <div class="tab-panel" id="panel-bin">
+      <div class="tab-panel" id="panel-bin" style="display:none;">
         <div class="template-strip">P-01-A-XXX-Y-ZZZZ</div>
 
         <div class="field" id="bin-xxx-field">
@@ -73,49 +134,7 @@
         </div>
       </div>
 
-      <!-- SCAN BARCODE PHOTO -->
-      <div class="tab-panel" id="panel-scan" style="display:none;">
-        <div class="template-strip">Decoded from camera</div>
-
-        <div class="field">
-          <label>Scan mode</label>
-          <div class="btn-group" id="scan-mode" data-value="barcode">
-            <div class="opt selected" data-v="barcode">Barcode</div>
-            <div class="opt" data-v="text">Read text</div>
-          </div>
-          <div class="hint" id="scan-mode-hint">Barcode mode — point at a barcode and hold steady.</div>
-        </div>
-
-        <div class="field">
-          <label>Camera</label>
-          <div class="btn-row" style="margin-top:0;">
-            <button class="btn accent" id="scanStartBtn" type="button">Start camera</button>
-            <button class="btn secondary" id="scanStopBtn" type="button" disabled>Stop camera</button>
-            <button class="btn accent" id="scanCaptureBtn" type="button" style="display:none;">Scan words</button>
-          </div>
-        </div>
-
-        <div id="scan-video-wrap" style="display:none;">
-          <video id="scan-video" playsinline muted></video>
-          <div id="scan-word-layer"></div>
-          <div class="scan-reticle" id="scan-reticle"></div>
-        </div>
-
-        <div id="scan-status" class="scan-status">Camera is off.</div>
-
-        <div id="scan-picker" class="scan-picker" style="display:none;">
-          <label>Multiple codes detected — choose one</label>
-          <div id="scan-picker-list" class="scan-picker-list"></div>
-        </div>
-
-        <div class="field" id="scan-value-field">
-          <label for="scan-value">Scanned value</label>
-          <input type="text" id="scan-value" placeholder="Decoded value appears here — or type it manually">
-          <div class="err-msg">Enter or scan a value.</div>
-        </div>
-      </div>
-
-      <div class="btn-row">
+      <div class="btn-row desktop-actions">
         <button class="btn accent" id="addToSheetBtn">+ Add to print sheet</button>
         <button class="btn secondary" id="downloadBtn">Download PNG</button>
       </div>
@@ -125,14 +144,14 @@
     <div class="preview-col">
       <div class="preview-head">
         <h2>Live label</h2>
-        <span id="typeLabel">Bin location</span>
+        <span id="typeLabel">Scanned barcode</span>
       </div>
 
       <div class="tag-stage">
         <div class="tag">
-          <div class="eyebrow" id="tagEyebrow">Bin Location</div>
+          <div class="eyebrow" id="tagEyebrow">Scanned barcode</div>
           <div class="qr-holder" id="qrHolder"></div>
-          <div class="code" id="tagCode">P-01-A-101-A-1000</div>
+          <div class="code" id="tagCode">—</div>
           <div class="ticks" id="ticks"></div>
         </div>
       </div>
@@ -143,6 +162,7 @@
         <div class="sheet-head">
           <h2 style="margin:0;font-size:16px;">Print sheet <span style="font-size:11px;color:#8a8574;font-weight:400;">(<span id="sheetCount">0</span> labels)</span></h2>
           <div class="btn-row" style="margin:0;">
+            <button class="btn secondary" id="shareSheetBtn" type="button">Share</button>
             <button class="btn secondary" id="clearSheetBtn">Clear</button>
             <button class="btn" id="printBtn">Print sheet</button>
           </div>
@@ -157,5 +177,33 @@
 
 <footer>RACKTAG — generate, verify, print. Labels regenerate live as fields change.</footer>
 
+<div class="mobile-action-bar" id="mobileActionBar">
+  <button class="btn accent" id="mobileAddBtn" type="button">+ Add</button>
+  <button class="btn secondary" id="mobileDownloadBtn" type="button">PNG</button>
+  <button class="btn" id="mobilePrintBtn" type="button">Print</button>
+</div>
+
+<div id="sheetPreviewModal" class="sheet-preview-modal" style="display:none;">
+  <div class="sheet-preview-backdrop" id="sheetPreviewBackdrop"></div>
+  <div class="sheet-preview-panel">
+    <div class="sheet-preview-head">
+      <h2>Label preview</h2>
+      <button class="btn secondary" id="sheetPreviewClose" type="button">Close</button>
+    </div>
+    <div class="tag-stage sheet-preview-stage">
+      <div class="tag">
+        <div class="eyebrow" id="sheetPreviewEyebrow">Bin location</div>
+        <div class="qr-holder" id="sheetPreviewQr"></div>
+        <div class="code" id="sheetPreviewCode"></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn accent" id="sheetPreviewDownload" type="button">Download PNG</button>
+      <button class="btn" id="sheetPreviewPrintOne" type="button">Print one</button>
+    </div>
+  </div>
+</div>
+
 <!-- hidden batch print layout -->
 <div id="printSheet"></div>
+<div id="printOneSheet"></div>
