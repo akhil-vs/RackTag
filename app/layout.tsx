@@ -1,35 +1,12 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
-import RegisterSW from "./register-sw";
-import "@fontsource/oswald/400.css";
-import "@fontsource/oswald/600.css";
-import "@fontsource/oswald/700.css";
-import "@fontsource/ibm-plex-mono/400.css";
-import "@fontsource/ibm-plex-mono/600.css";
-import "@fontsource/ibm-plex-mono/700.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "RACKTAG — Warehouse Label Generator",
   description:
     "Build QR tags for bin locations, carts, and cart bins. Pick the variable segments, print or save the label art.",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    title: "RackTag",
-    statusBarStyle: "black-translucent",
-  },
-  icons: {
-    apple: "/icons/icon-192.png",
-  },
-};
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
-  themeColor: "#F5C400",
 };
 
 export default function RootLayout({
@@ -39,20 +16,26 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>
         {children}
-        <RegisterSW />
         <Analytics />
         <Script
-          src="/vendor/qrcode.min.js"
+          src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
           strategy="beforeInteractive"
         />
         <Script
-          src="/vendor/zxing.min.js"
+          src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"
           strategy="beforeInteractive"
         />
         <Script
-          src="/vendor/tesseract.min.js"
+          src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"
           strategy="lazyOnload"
         />
         <Script src="/racktag.js" strategy="afterInteractive" />
