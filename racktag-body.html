@@ -1,0 +1,161 @@
+
+<div class="topbar">
+  <div class="brand">
+    <h1>RACKTAG</h1>
+    <small>warehouse label generator</small>
+  </div>
+  <p>Build QR tags for bin locations, carts, and cart bins. Pick the variable segments, print or save the label art.</p>
+</div>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" data-tab="bin">Bin Location</div>
+    <div class="tab" data-tab="cart">Cart Number</div>
+    <div class="tab" data-tab="cartbin">Cart Bin Number</div>
+    <div class="tab" data-tab="scan">From Barcode Photo</div>
+  </div>
+
+  <div class="grid">
+    <!-- FORM PANEL -->
+    <div class="panel panel-form">
+
+      <!-- BIN LOCATION -->
+      <div class="tab-panel" id="panel-bin">
+        <div class="template-strip">P-01-A-XXX-Y-ZZZZ</div>
+
+        <div class="field" id="bin-xxx-field">
+          <label for="bin-xxx">Aisle position (XXX) · 101–113</label>
+          <input type="number" id="bin-xxx" min="101" max="113" value="101">
+          <div class="err-msg">Enter a whole number between 101 and 113.</div>
+        </div>
+
+        <div class="field">
+          <label>Level (Y) · A–N</label>
+          <div class="btn-group" id="bin-y" data-value="A"></div>
+        </div>
+
+        <div class="field" id="bin-zzzz-field">
+          <label for="bin-zzzz">Bin ID (ZZZZ) · 1000–1999</label>
+          <input type="number" id="bin-zzzz" min="1000" max="1999" value="1000">
+          <div class="err-msg">Enter a whole number between 1000 and 1999.</div>
+        </div>
+      </div>
+
+      <!-- CART NUMBER -->
+      <div class="tab-panel" id="panel-cart" style="display:none;">
+        <div class="template-strip">CRT-MAN1-N</div>
+
+        <div class="field" id="cart-xxx-field">
+          <label for="cart-xxx">Cart number · 1–999</label>
+          <input type="number" id="cart-xxx" min="1" max="999" value="1">
+          <div class="err-msg">Enter a whole number between 1 and 999.</div>
+        </div>
+      </div>
+
+      <!-- CART BIN NUMBER -->
+      <div class="tab-panel" id="panel-cartbin" style="display:none;">
+        <div class="template-strip">CRT-MAN1-N-Y-Z</div>
+
+        <div class="field" id="cartbin-xxx-field">
+          <label for="cartbin-xxx">Cart number · 1–999</label>
+          <input type="number" id="cartbin-xxx" min="1" max="999" value="1">
+          <div class="err-msg">Enter a whole number between 1 and 999.</div>
+        </div>
+
+        <div class="field">
+          <label>Level (Y) · A–N</label>
+          <div class="btn-group" id="cartbin-y" data-value="A"></div>
+        </div>
+
+        <div class="field">
+          <label>Bin slot (Z) · 1–6</label>
+          <div class="btn-group" id="cartbin-z" data-value="1"></div>
+        </div>
+      </div>
+
+      <!-- SCAN BARCODE PHOTO -->
+      <div class="tab-panel" id="panel-scan" style="display:none;">
+        <div class="template-strip">Decoded from camera</div>
+
+        <div class="field">
+          <label>Scan mode</label>
+          <div class="btn-group" id="scan-mode" data-value="barcode">
+            <div class="opt selected" data-v="barcode">Barcode</div>
+            <div class="opt" data-v="text">Read text</div>
+          </div>
+          <div class="hint" id="scan-mode-hint">Barcode mode — point at a barcode and hold steady.</div>
+        </div>
+
+        <div class="field">
+          <label>Camera</label>
+          <div class="btn-row" style="margin-top:0;">
+            <button class="btn accent" id="scanStartBtn" type="button">Start camera</button>
+            <button class="btn secondary" id="scanStopBtn" type="button" disabled>Stop camera</button>
+            <button class="btn accent" id="scanCaptureBtn" type="button" style="display:none;">Scan words</button>
+          </div>
+        </div>
+
+        <div id="scan-video-wrap" style="display:none;">
+          <video id="scan-video" playsinline muted></video>
+          <div id="scan-word-layer"></div>
+          <div class="scan-reticle" id="scan-reticle"></div>
+        </div>
+
+        <div id="scan-status" class="scan-status">Camera is off.</div>
+
+        <div id="scan-picker" class="scan-picker" style="display:none;">
+          <label>Multiple codes detected — choose one</label>
+          <div id="scan-picker-list" class="scan-picker-list"></div>
+        </div>
+
+        <div class="field" id="scan-value-field">
+          <label for="scan-value">Scanned value</label>
+          <input type="text" id="scan-value" placeholder="Decoded value appears here — or type it manually">
+          <div class="err-msg">Enter or scan a value.</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn accent" id="addToSheetBtn">+ Add to print sheet</button>
+        <button class="btn secondary" id="downloadBtn">Download PNG</button>
+      </div>
+    </div>
+
+    <!-- PREVIEW COLUMN -->
+    <div class="preview-col">
+      <div class="preview-head">
+        <h2>Live label</h2>
+        <span id="typeLabel">Bin location</span>
+      </div>
+
+      <div class="tag-stage">
+        <div class="tag">
+          <div class="eyebrow" id="tagEyebrow">Bin Location</div>
+          <div class="qr-holder" id="qrHolder"></div>
+          <div class="code" id="tagCode">P-01-A-101-A-1000</div>
+          <div class="ticks" id="ticks"></div>
+        </div>
+      </div>
+      <div class="status-line" id="statusLine">Ready</div>
+
+      <!-- BATCH / PRINT SHEET -->
+      <div class="panel">
+        <div class="sheet-head">
+          <h2 style="margin:0;font-size:16px;">Print sheet <span style="font-size:11px;color:#8a8574;font-weight:400;">(<span id="sheetCount">0</span> labels)</span></h2>
+          <div class="btn-row" style="margin:0;">
+            <button class="btn secondary" id="clearSheetBtn">Clear</button>
+            <button class="btn" id="printBtn">Print sheet</button>
+          </div>
+        </div>
+        <div class="sheet-grid" id="sheetGrid">
+          <div class="sheet-empty" id="sheetEmpty">No labels added yet. Build one on the left and hit "Add to print sheet."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>RACKTAG — generate, verify, print. Labels regenerate live as fields change.</footer>
+
+<!-- hidden batch print layout -->
+<div id="printSheet"></div>
