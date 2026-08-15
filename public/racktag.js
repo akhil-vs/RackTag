@@ -28,6 +28,47 @@
   const typeLabels = { bin:'Bin location', cart:'Cart number', cartbin:'Cart bin number', scan:'Scanned barcode' };
   let activeTab = 'bin';
 
+  const ANALYTICS_OPT_KEY = 'racktag_analytics_opt_in';
+  const ANALYTICS_SESSION_KEY = 'racktag_analytics_session';
+
+  function getAnalyticsSessionId(){
+    let id = localStorage.getItem(ANALYTICS_SESSION_KEY);
+    if(!id){
+      id = (crypto.randomUUID && crypto.randomUUID()) || (Date.now() + '-' + Math.random().toString(16).slice(2));
+      localStorage.setItem(ANALYTICS_SESSION_KEY, id);
+    }
+    return id;
+  }
+
+  function isAnalyticsEnabled(){
+    const stored = localStorage.getItem(ANALYTICS_OPT_KEY);
+    if(stored === null) return true;
+    return stored === '1';
+  }
+
+  function setAnalyticsEnabled(on){
+    localStorage.setItem(ANALYTICS_OPT_KEY, on ? '1' : '0');
+  }
+
+  function trackUsage(eventType, details){
+    if(!isAnalyticsEnabled()) return;
+    const payload = {
+      sessionId: getAnalyticsSessionId(),
+      event: eventType,
+      tab: activeTab,
+      scanMode: details && details.scanMode ? details.scanMode : (typeof getScanMode === 'function' && activeTab === 'scan' ? getScanMode() : null),
+      labelCode: details && details.labelCode ? details.labelCode : null,
+      sheetCount: details && details.sheetCount != null ? details.sheetCount : null,
+      metadata: details && details.metadata ? details.metadata : null
+    };
+    fetch('/api/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true
+    }).catch(function(){});
+  }
+
   tabs.forEach(t=>{
     t.addEventListener('click', ()=>{
       tabs.forEach(x=>x.classList.remove('active'));
@@ -40,6 +81,7 @@
       document.getElementById(panels[activeTab]).style.display='block';
       document.getElementById('typeLabel').textContent = typeLabels[activeTab];
       document.getElementById('tagEyebrow').textContent = typeLabels[activeTab];
+      trackUsage('tab_change', { metadata: { tab: activeTab } });
       refresh();
     });
   });
@@ -219,6 +261,7 @@
     scanPickerList.querySelectorAll('.pick').forEach(btn=>{
       btn.classList.toggle('selected', btn.textContent === code);
     });
+    trackUsage('scan_barcode', { labelCode: code, metadata: { source: 'picker' } });
     refresh();
   }
 
@@ -227,6 +270,7 @@
     if(boxEl) boxEl.classList.add('selected');
     scanValue.value = text;
     setScanStatus('Selected: ' + text, 'success');
+    trackUsage('scan_text', { labelCode: text });
     refresh();
   }
 
@@ -252,6 +296,7 @@
       scanValue.value = codes[0];
       hideScanPicker();
       setScanStatus('Decoded: ' + codes[0], 'success');
+      trackUsage('scan_barcode', { labelCode: codes[0], metadata: { source: 'camera' } });
       refresh();
     } else {
       showScanPicker(codes);
@@ -549,6 +594,11 @@
     hideScanPicker();
     clearWordBoxes();
 
+    trackUsage('camera_start', {
+      metadata: { mode: getScanMode() },
+      scanMode: getScanMode()
+    });
+
     if(getScanMode() === 'text'){
       startTextCamera();
     } else {
@@ -632,6 +682,7 @@
   document.getElementById('downloadBtn').addEventListener('click', ()=>{
     const code = refresh();
     if(!code) return;
+    trackUsage('download_png', { labelCode: code });
     buildTagCanvas(code, (canvas)=>{
       const a = document.createElement('a');
       a.download = code + '.png';
@@ -694,18 +745,36 @@
     if(!code) return;
     if(sheet.some(s=>s.code===code)) return; // avoid duplicates
     sheet.push({ code, type: activeTab });
+    trackUsage('add_to_sheet', { labelCode: code, sheetCount: sheet.length });
     renderSheet();
   });
 
   document.getElementById('clearSheetBtn').addEventListener('click', ()=>{
     sheet.length = 0;
+    trackUsage('clear_sheet', { sheetCount: 0 });
     renderSheet();
   });
 
   document.getElementById('printBtn').addEventListener('click', ()=>{
     if(sheet.length === 0) return;
+    trackUsage('print_sheet', { sheetCount: sheet.length });
     window.print();
   });
 
   renderSheet();
+
+  const analyticsOptIn = document.getElementById('analyticsOptIn');
+  if(analyticsOptIn){
+    analyticsOptIn.checked = isAnalyticsEnabled();
+    analyticsOptIn.addEventListener('change', ()=>{
+      if(analyticsOptIn.checked){
+        setAnalyticsEnabled(true);
+        trackUsage('analytics_enabled');
+      } else {
+        trackUsage('analytics_disabled');
+        setAnalyticsEnabled(false);
+      }
+    });
+  }
+  trackUsage('app_open');
 })();
