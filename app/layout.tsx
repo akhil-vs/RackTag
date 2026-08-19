@@ -18,6 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var KEY='racktag_theme';var pref=localStorage.getItem(KEY)||'dark';function resolve(p){if(p==='system'&&window.matchMedia){return window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';}return p==='light'?'light':'dark';}document.documentElement.setAttribute('data-theme',resolve(pref));document.documentElement.setAttribute('data-theme-pref',pref);})();`,
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
