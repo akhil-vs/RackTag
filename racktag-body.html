@@ -1,8 +1,13 @@
 
 <div class="topbar">
   <div class="brand">
-    <h1>RACKTAG</h1>
-    <small>warehouse label generator</small>
+    <svg class="brand-icon" viewBox="0 0 32 32" aria-hidden="true">
+      <path fill="currentColor" d="M4 28h24v2H4v-2zm3-4h2V14h6v2h2v8h2V12h6v12h2V10H8v14zm5-16V6h8v2h-6v2h-2zm11-2h2v4h-2V6zM14 2h4v4h-4V2z"/>
+    </svg>
+    <div class="brand-text">
+      <h1>RACKTAG</h1>
+      <small>warehouse label generator</small>
+    </div>
   </div>
   <p>Build QR tags for bin locations, carts, and cart bins. Pick the variable segments, print or save the label art.</p>
 </div>
@@ -154,7 +159,7 @@
       <!-- BATCH / PRINT SHEET -->
       <div class="panel">
         <div class="sheet-head">
-          <h2 style="margin:0;font-size:16px;">Print sheet <span style="font-size:11px;color:#8a8574;font-weight:400;">(<span id="sheetCount">0</span> labels)</span></h2>
+          <h2 style="margin:0;font-size:16px;">Print sheet <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(<span id="sheetCount">0</span> labels)</span></h2>
           <div class="btn-row" style="margin:0;">
             <button class="btn secondary" id="clearSheetBtn">Clear</button>
             <button class="btn" id="printBtn">Print sheet</button>
@@ -178,3 +183,26 @@
 
 <!-- hidden batch print layout -->
 <div id="printSheet"></div>
+
+<nav class="app-nav" aria-label="Label type">
+  <button type="button" class="app-nav-item active" data-tab="qr" aria-label="QR Generator">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="3" y="14" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="14" width="3" height="3" fill="currentColor" stroke="none"/><rect x="18" y="14" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="18" width="3" height="3" fill="currentColor" stroke="none"/><rect x="18" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg>
+    <span>QR Gen</span>
+  </button>
+  <button type="button" class="app-nav-item" data-tab="bin" aria-label="Bin Location">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8l8-4 8 4v12H4V8z"/><path d="M9 12h6v8H9z"/></svg>
+    <span>Bin Loc</span>
+  </button>
+  <button type="button" class="app-nav-item" data-tab="cart" aria-label="Cart Number">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 4h2l2.5 11h11l2-8H7"/></svg>
+    <span>Cart #</span>
+  </button>
+  <button type="button" class="app-nav-item" data-tab="cartbin" aria-label="Cart Bin Number">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="3" y="14" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7" fill="currentColor" stroke="none"/></svg>
+    <span>Bin #</span>
+  </button>
+  <button type="button" class="app-nav-item" data-tab="scan" aria-label="From Barcode Photo">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.5"/><path d="M12 9v6M9 12h6"/></svg>
+    <span>Photo</span>
+  </button>
+</nav>

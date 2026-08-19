@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "RACKTAG — Warehouse Label Generator",
   description:
     "Build QR tags for bin locations, carts, and cart bins. Pick the variable segments, print or save the label art.",
+  themeColor: "#121212",
 };
 
 export default function RootLayout({

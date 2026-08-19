@@ -23,7 +23,7 @@
   buildButtonGroup('cartbin-y', letters);
   buildButtonGroup('cartbin-z', slots);
 
-  const tabs = document.querySelectorAll('.tab');
+  const tabs = document.querySelectorAll('.tab, .app-nav-item');
   const panels = { bin:'panel-bin', cart:'panel-cart', cartbin:'panel-cartbin', scan:'panel-scan', qr:'panel-qr' };
   const typeLabels = { bin:'Bin location', cart:'Cart number', cartbin:'Cart bin number', scan:'Scanned barcode', qr:'Custom QR' };
   let activeTab = 'qr';
@@ -144,13 +144,15 @@
 
   tabs.forEach(t=>{
     t.addEventListener('click', ()=>{
-      tabs.forEach(x=>x.classList.remove('active'));
-      t.classList.add('active');
+      const tabKey = t.dataset.tab;
+      document.querySelectorAll('.tab, .app-nav-item').forEach(x=>{
+        x.classList.toggle('active', x.dataset.tab === tabKey);
+      });
       Object.values(panels).forEach(id=>document.getElementById(id).style.display='none');
-      if(activeTab === 'scan' && t.dataset.tab !== 'scan' && typeof stopCamera === 'function'){
+      if(activeTab === 'scan' && tabKey !== 'scan' && typeof stopCamera === 'function'){
         stopCamera();
       }
-      activeTab = t.dataset.tab;
+      activeTab = tabKey;
       document.getElementById(panels[activeTab]).style.display='block';
       document.getElementById('typeLabel').textContent = typeLabels[activeTab];
       document.getElementById('tagEyebrow').textContent = typeLabels[activeTab];

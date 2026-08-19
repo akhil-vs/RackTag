@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#121212">
 <title>RACKTAG — Warehouse Label Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,16 +24,28 @@ if(window.caches){
 </script>
 <style>
   :root{
-    --concrete:#EDEAE1;
-    --concrete-dark:#DFDBCE;
-    --ink:#1E1E1E;
-    --steel:#23262B;
-    --steel-2:#3A3F46;
-    --yellow:#F5C400;
-    --yellow-deep:#D9A600;
-    --rust:#B8410E;
-    --line:#C9C3B2;
-    --ok:#2F6B3F;
+    --bg:#121212;
+    --bg-raised:#1a1a1a;
+    --bg-input:#0a0a0a;
+    --surface:#1e1e1e;
+    --border:#2e2e2e;
+    --yellow:#FFD700;
+    --yellow-deep:#E6C200;
+    --text:#f0f0f0;
+    --text-muted:#9a9a9a;
+    --text-dim:#666;
+    --on-yellow:#121212;
+    --ok:#4ade80;
+    --error:#f87171;
+    --label-bg:#FBF7E9;
+    --label-ink:#1E1E1E;
+    --concrete:var(--bg);
+    --concrete-dark:var(--bg-raised);
+    --ink:var(--text);
+    --steel:var(--bg);
+    --steel-2:var(--surface);
+    --line:var(--border);
+    --rust:var(--error);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -54,43 +67,45 @@ if(window.caches){
   }
   /* header */
   .topbar{
-    background:var(--steel);
-    color:var(--concrete);
-    padding:22px 28px;
+    background:var(--bg);
+    color:var(--text);
+    padding:20px 24px 16px;
     position:relative;
-    overflow:hidden;
-    border-bottom:6px solid var(--yellow);
-  }
-  .topbar::after{
-    content:"";
-    position:absolute;
-    top:0; right:0; bottom:0;
-    width:64px;
-    background:repeating-linear-gradient(135deg, var(--yellow) 0 14px, var(--steel) 14px 28px);
-    opacity:0.9;
+    border-bottom:4px solid var(--yellow);
   }
   .topbar .brand{
     display:flex;
-    align-items:baseline;
-    gap:14px;
+    align-items:center;
+    gap:12px;
   }
+  .topbar .brand-icon{
+    width:36px;
+    height:36px;
+    flex-shrink:0;
+    color:var(--yellow);
+  }
+  .topbar .brand-text{ min-width:0; }
   .topbar h1{
-    font-size:28px;
+    font-size:26px;
     font-weight:700;
     margin:0;
-    color:var(--concrete);
+    color:var(--yellow);
+    line-height:1.1;
   }
   .topbar .brand small{
     font-family:'IBM Plex Mono', monospace;
     text-transform:none;
     letter-spacing:0;
-    font-size:12px;
-    color:#C9C3B2;
+    font-size:11px;
+    color:var(--text-muted);
+    display:block;
+    margin-top:2px;
   }
   .topbar p{
-    margin:6px 0 0;
-    font-size:12.5px;
-    color:#B9C0C6;
+    display:none;
+    margin:10px 0 0;
+    font-size:12px;
+    color:var(--text-muted);
     max-width:640px;
     letter-spacing:0.03em;
   }
@@ -112,15 +127,17 @@ if(window.caches){
   .grid > *{ min-width:0; }
 
   #usageBanner{
-    padding:8px 28px;
+    padding:10px 24px;
     font-size:12px;
     line-height:1.5;
-    background:#23262B;
-    color:#EDEAE1;
-    border-bottom:2px solid #F5C400;
+    background:var(--bg-raised);
+    color:var(--text-muted);
+    border:1px solid var(--border);
+    border-left:3px solid var(--yellow);
+    margin:0 24px 0;
     word-break:break-word;
   }
-  #usageBanner a{ color:#F5C400; }
+  #usageBanner a{ color:var(--yellow); text-decoration:underline; }
 
   /* tabs styled like rack shelf dividers */
   .tabs{
@@ -131,33 +148,34 @@ if(window.caches){
   }
   .tab{
     min-width:0;
-    background:var(--concrete-dark);
-    border:2px solid var(--ink);
+    background:var(--bg-raised);
+    border:1px solid var(--border);
     border-bottom:none;
     padding:10px 8px;
     text-align:center;
     font-family:'Oswald', sans-serif;
     font-weight:600;
-    font-size:12.5px;
+    font-size:12px;
     letter-spacing:0.04em;
     text-transform:uppercase;
     cursor:pointer;
-    color:#6b6656;
-    clip-path:polygon(8% 0, 92% 0, 100% 100%, 0% 100%);
+    color:var(--text-muted);
     line-height:1.25;
     overflow-wrap:break-word;
     hyphens:auto;
+    border-radius:6px 6px 0 0;
   }
   .tab.active{
     background:var(--yellow);
-    color:var(--ink);
+    color:var(--on-yellow);
+    border-color:var(--yellow);
     position:relative;
     z-index:2;
   }
 
   .panel{
-    background:#fff;
-    border:2px solid var(--ink);
+    background:var(--bg-raised);
+    border:1px solid var(--border);
     padding:20px;
     position:relative;
   }
@@ -171,32 +189,34 @@ if(window.caches){
     font-weight:600;
     letter-spacing:0.06em;
     text-transform:uppercase;
-    color:#4a4636;
+    color:var(--text);
     margin-bottom:6px;
   }
   .field .hint{
     font-size:10.5px;
-    color:#8a8574;
+    color:var(--text-muted);
     margin-top:4px;
     letter-spacing:0.02em;
   }
   .field input[type=number], .field input[type=text], .field select, .field textarea{
     width:100%;
-    padding:9px 10px;
-    border:1.5px solid var(--ink);
-    background:var(--concrete);
+    padding:10px 12px;
+    border:1px solid var(--yellow);
+    background:var(--bg-input);
     font-family:'IBM Plex Mono', monospace;
     font-size:14px;
-    color:var(--ink);
+    color:var(--text);
+    border-radius:2px;
   }
   .field textarea{ resize:vertical; min-height:88px; }
+  .field input::placeholder, .field textarea::placeholder{ color:var(--text-dim); }
   .field input:focus, .field select:focus, .field textarea:focus{
-    outline:2px solid var(--yellow-deep);
+    outline:2px solid var(--yellow);
     outline-offset:1px;
   }
   .field.error input, .field.error select, .field.error textarea{
-    border-color:var(--rust);
-    background:#FBEDE7;
+    border-color:var(--error);
+    background:rgba(248,113,113,0.08);
   }
   .field .err-msg{
     display:none;
@@ -219,19 +239,20 @@ if(window.caches){
     min-width:34px;
     text-align:center;
     padding:8px 6px;
-    border:1.5px solid var(--ink);
-    background:var(--concrete);
-    color:var(--ink);
+    border:1px solid var(--border);
+    background:var(--bg-input);
+    color:var(--text);
     cursor:pointer;
     user-select:none;
   }
   .btn-group .opt:hover{
-    background:var(--concrete-dark);
+    border-color:var(--yellow);
+    color:var(--yellow);
   }
   .btn-group .opt.selected{
     background:var(--yellow);
-    border-color:var(--ink);
-    box-shadow:inset 0 0 0 2px var(--ink);
+    border-color:var(--yellow);
+    color:var(--on-yellow);
   }
 
   .field input[type=file]{
@@ -313,12 +334,13 @@ if(window.caches){
     font-size:11.5px;
     margin-bottom:14px;
     padding:8px 10px;
-    background:var(--concrete-dark);
-    border-left:4px solid var(--line);
+    background:var(--bg-input);
+    border-left:3px solid var(--border);
+    color:var(--text-muted);
   }
   .scan-status.loading{
-    border-left-color:var(--yellow-deep);
-    color:#6b5c00;
+    border-left-color:var(--yellow);
+    color:var(--yellow);
   }
   .scan-status.success{
     border-left-color:var(--ok);
@@ -340,7 +362,7 @@ if(window.caches){
     font-weight:600;
     letter-spacing:0.06em;
     text-transform:uppercase;
-    color:#4a4636;
+    color:var(--text);
     margin-bottom:6px;
   }
   .scan-picker-list{
@@ -352,33 +374,35 @@ if(window.caches){
     width:100%;
     text-align:left;
     padding:9px 10px;
-    border:1.5px solid var(--ink);
-    background:var(--concrete);
+    border:1px solid var(--border);
+    background:var(--bg-input);
     font-family:'IBM Plex Mono', monospace;
     font-size:13px;
     font-weight:600;
-    color:var(--ink);
+    color:var(--text);
     cursor:pointer;
     word-break:break-all;
   }
   .scan-picker-list .pick:hover{
-    background:var(--concrete-dark);
+    border-color:var(--yellow);
   }
   .scan-picker-list .pick.selected{
     background:var(--yellow);
-    box-shadow:inset 0 0 0 2px var(--ink);
+    border-color:var(--yellow);
+    color:var(--on-yellow);
   }
 
   .template-strip{
     font-family:'IBM Plex Mono', monospace;
-    background:var(--steel);
+    background:var(--bg-input);
     color:var(--yellow);
     padding:10px 12px;
     font-size:13px;
     letter-spacing:0.03em;
     margin-bottom:18px;
     word-break:break-all;
-    border-left:5px solid var(--yellow);
+    border:1px solid var(--border);
+    border-left:3px solid var(--yellow);
   }
 
   .btn{
@@ -387,23 +411,25 @@ if(window.caches){
     text-transform:uppercase;
     letter-spacing:0.05em;
     font-size:12.5px;
-    padding:11px 16px;
-    border:2px solid var(--ink);
-    background:var(--ink);
-    color:var(--concrete);
+    padding:12px 16px;
+    border:1px solid var(--yellow);
+    background:var(--yellow);
+    color:var(--on-yellow);
     cursor:pointer;
-    transition:transform 0.05s ease;
+    transition:transform 0.05s ease, opacity 0.05s ease;
+    border-radius:2px;
   }
-  .btn:hover{ transform:translateY(-1px); }
+  .btn:hover{ transform:translateY(-1px); opacity:0.95; }
   .btn:active{ transform:translateY(0); }
   .btn.secondary{
     background:transparent;
-    color:var(--ink);
+    color:var(--yellow);
+    border-color:var(--yellow);
   }
   .btn.accent{
     background:var(--yellow);
-    color:var(--ink);
-    border-color:var(--ink);
+    color:var(--on-yellow);
+    border-color:var(--yellow);
   }
   .btn:disabled{ opacity:0.4; cursor:not-allowed; }
   .btn-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
@@ -413,30 +439,28 @@ if(window.caches){
   .preview-head{
     display:flex; justify-content:space-between; align-items:baseline;
   }
-  .preview-head h2{ font-size:16px; margin:0; }
-  .preview-head span{ font-size:11px; color:#8a8574; }
+  .preview-head h2{ font-size:16px; margin:0; color:var(--text); }
+  .preview-head span{ font-size:11px; color:var(--text-muted); }
 
   .tag-stage{
-    background:var(--steel-2);
+    background:var(--bg-input);
     padding:36px;
     display:flex;
     justify-content:center;
     align-items:center;
     min-height:340px;
-    background-image:
-      linear-gradient(rgba(0,0,0,0.15) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,0,0,0.15) 1px, transparent 1px);
-    background-size:24px 24px;
+    border:1px dashed var(--border);
+    border-radius:2px;
   }
 
   .tag{
-    background:#FBF7E9;
+    background:var(--label-bg);
     width:100%;
     max-width:260px;
     padding:18px 16px 20px;
     position:relative;
-    border:2px dashed var(--ink);
-    box-shadow:0 10px 22px rgba(0,0,0,0.35);
+    border:2px dashed var(--label-ink);
+    box-shadow:0 10px 22px rgba(0,0,0,0.5);
   }
   .tag::before{
     content:"";
@@ -445,7 +469,7 @@ if(window.caches){
     width:14px; height:14px;
     border-radius:50%;
     background:var(--steel-2);
-    box-shadow:inset 0 0 0 2px #FBF7E9, inset 0 0 0 3px var(--ink);
+    box-shadow:inset 0 0 0 2px var(--label-bg), inset 0 0 0 3px var(--label-ink);
   }
   .tag .eyebrow{
     font-family:'Oswald', sans-serif;
@@ -453,7 +477,7 @@ if(window.caches){
     font-weight:600;
     letter-spacing:0.12em;
     text-transform:uppercase;
-    color:var(--rust);
+    color:var(--error);
     text-align:center;
     margin-bottom:10px;
   }
@@ -474,6 +498,7 @@ if(window.caches){
     font-size:14.5px;
     letter-spacing:0.04em;
     word-break:break-all;
+    color:var(--label-ink);
   }
   .tag .ticks{
     display:flex;
@@ -483,12 +508,12 @@ if(window.caches){
   }
   .tag .ticks div{
     width:2px;
-    background:var(--ink);
+    background:var(--label-ink);
   }
 
   .status-line{
     font-size:11.5px;
-    color:#8a8574;
+    color:var(--text-muted);
     text-align:center;
   }
   .status-line.ok{ color:var(--ok); font-weight:600; }
@@ -505,8 +530,8 @@ if(window.caches){
     margin-top:14px;
   }
   .sheet-item{
-    background:#FBF7E9;
-    border:1.5px dashed var(--ink);
+    background:var(--label-bg);
+    border:1.5px dashed var(--label-ink);
     padding:10px;
     position:relative;
     text-align:center;
@@ -516,6 +541,7 @@ if(window.caches){
     font-weight:600;
     margin-top:6px;
     word-break:break-all;
+    color:var(--label-ink);
   }
   .sheet-item canvas,
   .sheet-item img{
@@ -535,16 +561,16 @@ if(window.caches){
   }
   .sheet-empty{
     font-size:12px;
-    color:#8a8574;
+    color:var(--text-muted);
     padding:20px 0;
     text-align:center;
-    border:1.5px dashed var(--line);
+    border:1px dashed var(--border);
   }
 
   footer{
     text-align:center;
     font-size:11px;
-    color:#8a8574;
+    color:var(--text-dim);
     padding:30px 0 40px;
   }
   footer .analytics-opt{
@@ -554,90 +580,136 @@ if(window.caches){
     margin-top:10px;
     font-family:'IBM Plex Mono', monospace;
     font-size:10.5px;
-    color:#6b6656;
+    color:var(--text-muted);
     cursor:pointer;
     user-select:none;
   }
   footer .analytics-opt input{
-    accent-color:var(--yellow-deep);
+    accent-color:var(--yellow);
+  }
+
+  /* bottom app navigation (mobile / tablet) */
+  .app-nav{
+    display:none;
+  }
+  .app-nav-item{
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .app-nav-item svg{
+    width:22px;
+    height:22px;
+    stroke:currentColor;
+    fill:none;
+    stroke-width:1.75;
+    stroke-linecap:round;
+    stroke-linejoin:round;
   }
 
   /* responsive */
   @media (max-width:960px){
     .grid{ grid-template-columns:1fr; }
+    body{
+      padding-bottom:calc(76px + env(safe-area-inset-bottom));
+    }
+    .tabs{ display:none; }
+    .app-nav{
+      display:flex;
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      z-index:100;
+      background:var(--bg);
+      border-top:1px solid var(--border);
+      padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+      justify-content:space-around;
+      gap:4px;
+    }
+    .app-nav-item{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:3px;
+      padding:8px 4px;
+      border:none;
+      background:transparent;
+      color:var(--text-muted);
+      font-size:9.5px;
+      letter-spacing:0.02em;
+      cursor:pointer;
+      border-radius:10px;
+      min-width:0;
+      max-width:88px;
+    }
+    .app-nav-item.active{
+      background:var(--yellow);
+      color:var(--on-yellow);
+    }
+    .topbar p{ display:none; }
+    footer{ display:none; }
+    .wrap{ padding-top:16px; }
+    .panel-form{ border-radius:2px; }
+    .btn-row{
+      flex-direction:column;
+    }
+    .btn-row .btn{
+      width:100%;
+      flex:1 1 100%;
+      text-align:center;
+    }
+  }
+
+  @media (min-width:961px){
+    .topbar p{ display:block; }
+    #usageBanner{ margin-top:12px; }
   }
 
   @media (max-width:768px){
-    .wrap{ padding:20px; }
-    .topbar{ padding:18px 20px; padding-right:68px; }
-    .topbar p{ max-width:none; }
+    .wrap{ padding:16px 20px; }
+    .topbar{ padding:16px 20px 14px; }
     .tag-stage{ padding:28px 20px; min-height:300px; }
     .panel{ padding:18px; }
+    #usageBanner{ margin:0 20px; }
   }
 
   @media (max-width:640px){
     .wrap{
-      padding:16px;
+      padding:12px 16px;
       padding-left:max(16px, env(safe-area-inset-left));
       padding-right:max(16px, env(safe-area-inset-right));
     }
     .topbar{
-      padding:16px;
-      padding-right:56px;
+      padding:14px 16px 12px;
     }
-    .topbar::after{ width:44px; }
-    .topbar h1{ font-size:24px; }
-    .topbar .brand{ flex-wrap:wrap; gap:8px; }
-    .tabs{ grid-template-columns:repeat(3, minmax(0, 1fr)); }
-    .tab{
-      font-size:11px;
-      padding:10px 6px;
-      letter-spacing:0.03em;
-    }
+    .topbar h1{ font-size:22px; }
+    .topbar .brand{ gap:10px; }
+    .topbar .brand-icon{ width:32px; height:32px; }
     .preview-head{
       flex-direction:column;
       align-items:flex-start;
       gap:4px;
-    }
-    .btn-row .btn{
-      flex:1 1 calc(50% - 5px);
-      min-width:0;
     }
     .sheet-head{
       flex-direction:column;
       align-items:stretch;
     }
     .sheet-head .btn-row{ width:100%; }
-    .sheet-head .btn-row .btn{ flex:1 1 calc(50% - 5px); }
     .sheet-grid{
       grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));
       gap:10px;
     }
     #usageBanner{
-      padding:8px 16px;
+      padding:8px 12px;
       font-size:11px;
-    }
-    footer{
-      padding:24px 16px max(32px, env(safe-area-inset-bottom));
-    }
-    footer .analytics-opt{
-      display:flex;
-      flex-wrap:wrap;
-      justify-content:center;
-      padding:0 8px;
+      margin:0 16px;
     }
   }
 
   @media (max-width:480px){
     .topbar h1{ font-size:20px; }
-    .topbar .brand small{ font-size:11px; }
-    .topbar p{ font-size:11px; }
-    .tabs{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
-    .tab{
-      font-size:10px;
-      padding:9px 6px;
-      clip-path:polygon(4% 0, 96% 0, 100% 100%, 0% 100%);
-    }
+    .topbar .brand small{ font-size:10px; }
     .tag-stage{ padding:20px 12px; min-height:260px; }
     .tag{ max-width:100%; padding:14px 12px 16px; }
     .tag .code{ font-size:13px; }
@@ -645,13 +717,7 @@ if(window.caches){
     .template-strip{ font-size:12px; padding:8px 10px; }
     .btn{
       font-size:11.5px;
-      padding:12px 14px;
-    }
-    .btn-row{ flex-direction:column; }
-    .btn-row .btn,
-    .sheet-head .btn-row .btn{
-      flex:1 1 100%;
-      width:100%;
+      padding:13px 14px;
     }
     .btn-group .opt{
       min-width:36px;
@@ -672,10 +738,8 @@ if(window.caches){
       height:24px;
       font-size:14px;
     }
-  }
-
-  @media (max-width:360px){
-    .tab{ font-size:9.5px; padding:8px 4px; }
+    .app-nav-item{ font-size:9px; }
+    .app-nav-item svg{ width:20px; height:20px; }
   }
 
   @media (min-width:1200px){
@@ -718,8 +782,13 @@ if(window.caches){
 
 <div class="topbar">
   <div class="brand">
-    <h1>RACKTAG</h1>
-    <small>warehouse label generator</small>
+    <svg class="brand-icon" viewBox="0 0 32 32" aria-hidden="true">
+      <path fill="currentColor" d="M4 28h24v2H4v-2zm3-4h2V14h6v2h2v8h2V12h6v12h2V10H8v14zm5-16V6h8v2h-6v2h-2zm11-2h2v4h-2V6zM14 2h4v4h-4V2z"/>
+    </svg>
+    <div class="brand-text">
+      <h1>RACKTAG</h1>
+      <small>warehouse label generator</small>
+    </div>
   </div>
   <p>Build QR tags for bin locations, carts, and cart bins. Pick the variable segments, print or save the label art.</p>
 </div>
@@ -871,7 +940,7 @@ if(window.caches){
       <!-- BATCH / PRINT SHEET -->
       <div class="panel">
         <div class="sheet-head">
-          <h2 style="margin:0;font-size:16px;">Print sheet <span style="font-size:11px;color:#8a8574;font-weight:400;">(<span id="sheetCount">0</span> labels)</span></h2>
+          <h2 style="margin:0;font-size:16px;">Print sheet <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(<span id="sheetCount">0</span> labels)</span></h2>
           <div class="btn-row" style="margin:0;">
             <button class="btn secondary" id="clearSheetBtn">Clear</button>
             <button class="btn" id="printBtn">Print sheet</button>
@@ -895,6 +964,29 @@ if(window.caches){
 
 <!-- hidden batch print layout -->
 <div id="printSheet"></div>
+
+<nav class="app-nav" aria-label="Label type">
+  <button type="button" class="app-nav-item active" data-tab="qr" aria-label="QR Generator">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="3" y="14" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="14" width="3" height="3" fill="currentColor" stroke="none"/><rect x="18" y="14" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="18" width="3" height="3" fill="currentColor" stroke="none"/><rect x="18" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg>
+    <span>QR Gen</span>
+  </button>
+  <button type="button" class="app-nav-item" data-tab="bin" aria-label="Bin Location">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8l8-4 8 4v12H4V8z"/><path d="M9 12h6v8H9z"/></svg>
+    <span>Bin Loc</span>
+  </button>
+  <button type="button" class="app-nav-item" data-tab="cart" aria-label="Cart Number">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 4h2l2.5 11h11l2-8H7"/></svg>
+    <span>Cart #</span>
+  </button>
+  <button type="button" class="app-nav-item" data-tab="cartbin" aria-label="Cart Bin Number">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="3" y="14" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7" fill="currentColor" stroke="none"/></svg>
+    <span>Bin #</span>
+  </button>
+  <button type="button" class="app-nav-item" data-tab="scan" aria-label="From Barcode Photo">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.5"/><path d="M12 9v6M9 12h6"/></svg>
+    <span>Photo</span>
+  </button>
+</nav>
 
 <script src="/racktag.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
