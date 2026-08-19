@@ -24,12 +24,85 @@
   buildButtonGroup('cartbin-z', slots);
 
   const tabs = document.querySelectorAll('.tab');
-  const panels = { bin:'panel-bin', cart:'panel-cart', cartbin:'panel-cartbin', scan:'panel-scan' };
-  const typeLabels = { bin:'Bin location', cart:'Cart number', cartbin:'Cart bin number', scan:'Scanned barcode' };
+  const panels = { bin:'panel-bin', cart:'panel-cart', cartbin:'panel-cartbin', scan:'panel-scan', qr:'panel-qr' };
+  const typeLabels = { bin:'Bin location', cart:'Cart number', cartbin:'Cart bin number', scan:'Scanned barcode', qr:'Custom QR' };
   let activeTab = 'bin';
 
   const ANALYTICS_OPT_KEY = 'racktag_analytics_opt_in';
   const ANALYTICS_SESSION_KEY = 'racktag_analytics_session';
+
+  const DEFAULT_TEMPLATES = {
+    bin: { pattern: 'P-01-A-{xxx}-{y}-{zzzz}', validation: { xxx: { min: 101, max: 113 }, zzzz: { min: 1000, max: 1999 } } },
+    cart: { pattern: 'CRT-MAN1-{xxx}', validation: { xxx: { min: 1, max: 999 } } },
+    cartbin: { pattern: 'CRT-MAN1-{xxx}-{y}-{z}', validation: { xxx: { min: 1, max: 999 } } }
+  };
+
+  let orgTemplates = null;
+  let userContext = null;
+  let usageStatus = { allowed: true, used: 0, limit: 500, plan: 'free' };
+
+  function applyPattern(pattern, values){
+    return pattern.replace(/\{(\w+)\}/g, function(_, key){ return String(values[key] ?? ''); });
+  }
+
+  function getTemplates(){
+    return orgTemplates || DEFAULT_TEMPLATES;
+  }
+
+  async function loadOrgContext(){
+    try {
+      const [meRes, configRes, usageRes] = await Promise.all([
+        fetch('/api/auth/me', { credentials: 'include' }),
+        fetch('/api/org/config', { credentials: 'include' }),
+        fetch('/api/usage/status', { credentials: 'include' })
+      ]);
+      if(meRes.ok) userContext = await meRes.json();
+      if(configRes.ok){
+        const cfg = await configRes.json();
+        orgTemplates = cfg.templates;
+      }
+      if(usageRes.ok) usageStatus = await usageRes.json();
+      updateUsageBanner();
+    } catch(e){}
+  }
+
+  function updateUsageBanner(){
+    let banner = document.getElementById('usageBanner');
+    if(!banner){
+      banner = document.createElement('div');
+      banner.id = 'usageBanner';
+      banner.style.cssText = 'padding:8px 28px;font-size:12px;background:#23262B;color:#EDEAE1;border-bottom:2px solid #F5C400';
+      const topbar = document.querySelector('.topbar');
+      if(topbar && topbar.parentNode) topbar.parentNode.insertBefore(banner, topbar.nextSibling);
+    }
+    if(userContext && userContext.authenticated){
+      const u = usageStatus;
+      const limitText = u.limit == null ? 'unlimited' : (u.used + '/' + u.limit);
+      const orgName = userContext.org && userContext.org.name ? userContext.org.name : 'Organization';
+      banner.innerHTML = 'Signed in as <strong>' + userContext.user.name + '</strong> (' + orgName + ') · Plan: ' + u.plan + ' · Labels this month: ' + limitText + ' · <a href="/admin" style="color:#F5C400">Admin</a>';
+    } else {
+      banner.innerHTML = 'Anonymous evaluation mode · <a href="/login" style="color:#F5C400">Sign in</a> for org templates, audit export, and billing';
+    }
+  }
+
+  async function checkUsageGate(action){
+    const billable = ['download_png', 'add_to_sheet', 'print_sheet'];
+    if(billable.indexOf(action) === -1) return true;
+    try {
+      const res = await fetch('/api/usage/check', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: action })
+      });
+      if(res.ok) return true;
+      const data = await res.json();
+      alert(data.message || 'Monthly label limit reached. Visit /admin/billing to upgrade.');
+      return false;
+    } catch(e){
+      return true;
+    }
+  }
 
   function getAnalyticsSessionId(){
     let id = localStorage.getItem(ANALYTICS_SESSION_KEY);
@@ -64,6 +137,7 @@
     fetch('/api/analytics', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(payload),
       keepalive: true
     }).catch(function(){});
@@ -101,37 +175,48 @@
   }
 
   function computeCode(){
+    const templates = getTemplates();
     if(activeTab === 'bin'){
       const xxx = parseInt(document.getElementById('bin-xxx').value, 10);
       const y = document.getElementById('bin-y').dataset.value;
       const zzzz = parseInt(document.getElementById('bin-zzzz').value, 10);
-      const xxxOk = Number.isInteger(xxx) && xxx >= 101 && xxx <= 113;
-      const zzzzOk = Number.isInteger(zzzz) && zzzz >= 1000 && zzzz <= 1999;
+      const v = templates.bin.validation;
+      const xxxOk = Number.isInteger(xxx) && xxx >= v.xxx.min && xxx <= v.xxx.max;
+      const zzzzOk = Number.isInteger(zzzz) && zzzz >= v.zzzz.min && zzzz <= v.zzzz.max;
       setError('bin-xxx-field', !xxxOk);
       setError('bin-zzzz-field', !zzzzOk);
       if(!xxxOk || !zzzzOk) return null;
-      return `P-01-A-${xxx}-${y}-${zzzz}`;
+      return applyPattern(templates.bin.pattern, { xxx: xxx, y: y, zzzz: zzzz });
     }
     if(activeTab === 'cart'){
       const xxx = parseInt(document.getElementById('cart-xxx').value, 10);
-      const ok = Number.isInteger(xxx) && xxx >= 1 && xxx <= 999;
+      const v = templates.cart.validation;
+      const ok = Number.isInteger(xxx) && xxx >= v.xxx.min && xxx <= v.xxx.max;
       setError('cart-xxx-field', !ok);
       if(!ok) return null;
-      return `CRT-MAN1-${formatNum(xxx)}`;
+      return applyPattern(templates.cart.pattern, { xxx: formatNum(xxx) });
     }
     if(activeTab === 'cartbin'){
       const xxx = parseInt(document.getElementById('cartbin-xxx').value, 10);
       const y = document.getElementById('cartbin-y').dataset.value;
       const z = parseInt(document.getElementById('cartbin-z').dataset.value, 10);
-      const xxxOk = Number.isInteger(xxx) && xxx >= 1 && xxx <= 999;
+      const v = templates.cartbin.validation;
+      const xxxOk = Number.isInteger(xxx) && xxx >= v.xxx.min && xxx <= v.xxx.max;
       setError('cartbin-xxx-field', !xxxOk);
       if(!xxxOk) return null;
-      return `CRT-MAN1-${formatNum(xxx)}-${y}-${formatNum(z)}`;
+      return applyPattern(templates.cartbin.pattern, { xxx: formatNum(xxx), y: y, z: formatNum(z) });
     }
     if(activeTab === 'scan'){
       const val = document.getElementById('scan-value').value.trim();
       const ok = val.length > 0;
       setError('scan-value-field', !ok);
+      if(!ok) return null;
+      return val;
+    }
+    if(activeTab === 'qr'){
+      const val = document.getElementById('qr-text').value.trim();
+      const ok = val.length > 0;
+      setError('qr-text-field', !ok);
       if(!ok) return null;
       return val;
     }
@@ -187,7 +272,7 @@
     el.addEventListener('change', ()=>{ normalizeCartInput(el); refresh(); });
   });
 
-  document.querySelectorAll('input, select').forEach(el=>{
+  document.querySelectorAll('input, select, textarea').forEach(el=>{
     if(el.id === 'cart-xxx' || el.id === 'cartbin-xxx') return;
     el.addEventListener('input', refresh);
     el.addEventListener('change', refresh);
@@ -679,9 +764,10 @@
     lines.forEach((l,i)=> ctx.fillText(l, x, startY + i*lineHeight));
   }
 
-  document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  document.getElementById('downloadBtn').addEventListener('click', async ()=>{
     const code = refresh();
     if(!code) return;
+    if(!(await checkUsageGate('download_png'))) return;
     trackUsage('download_png', { labelCode: code });
     buildTagCanvas(code, (canvas)=>{
       const a = document.createElement('a');
@@ -740,10 +826,11 @@
     });
   }
 
-  document.getElementById('addToSheetBtn').addEventListener('click', ()=>{
+  document.getElementById('addToSheetBtn').addEventListener('click', async ()=>{
     const code = refresh();
     if(!code) return;
-    if(sheet.some(s=>s.code===code)) return; // avoid duplicates
+    if(sheet.some(s=>s.code===code)) return;
+    if(!(await checkUsageGate('add_to_sheet'))) return;
     sheet.push({ code, type: activeTab });
     trackUsage('add_to_sheet', { labelCode: code, sheetCount: sheet.length });
     renderSheet();
@@ -755,8 +842,9 @@
     renderSheet();
   });
 
-  document.getElementById('printBtn').addEventListener('click', ()=>{
+  document.getElementById('printBtn').addEventListener('click', async ()=>{
     if(sheet.length === 0) return;
+    if(!(await checkUsageGate('print_sheet'))) return;
     trackUsage('print_sheet', { sheetCount: sheet.length });
     window.print();
   });
@@ -776,5 +864,7 @@
       }
     });
   }
-  trackUsage('app_open');
+  loadOrgContext().finally(function(){
+    trackUsage('app_open');
+  });
 })();

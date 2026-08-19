@@ -3,6 +3,9 @@ import {
   insertUsageEvent,
   isDatabaseConfigured,
 } from "@/lib/analytics-db";
+import { getSessionFromRequest } from "@/lib/session";
+import { assertBillableAction } from "@/lib/usage";
+import { dispatchWebhook } from "@/lib/webhooks";
 
 const ALLOWED_EVENTS = new Set([
   "app_open",
@@ -41,6 +44,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid analytics payload." }, { status: 400 });
   }
 
+  const session = await getSessionFromRequest(request);
+  const gate = await assertBillableAction(session, event);
+  if (!gate.ok) {
+    return NextResponse.json(
+      { error: gate.status.message ?? "Usage limit reached.", ...gate.status },
+      { status: 402 },
+    );
+  }
+
   const tab = typeof data.tab === "string" ? data.tab.slice(0, 32) : null;
   const scanMode = typeof data.scanMode === "string" ? data.scanMode.slice(0, 32) : null;
   const labelCode =
@@ -64,7 +76,20 @@ export async function POST(request: NextRequest) {
       sheetCount,
       userAgent: request.headers.get("user-agent"),
       metadata,
+      orgId: session?.orgId ?? null,
+      userId: session?.userId ?? null,
     });
+
+    if (session?.orgId && ["download_png", "add_to_sheet", "print_sheet"].includes(event)) {
+      dispatchWebhook(session.orgId, `label.${event}`, {
+        labelCode,
+        tab,
+        sheetCount,
+        userId: session.userId,
+        userEmail: session.email,
+      }).catch(() => undefined);
+    }
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Failed to store analytics event", error);

@@ -1,31 +1,7 @@
 import { sql } from "@vercel/postgres";
+import { ensureSchema, isDatabaseConfigured } from "./db";
 
-let tableReady: Promise<void> | null = null;
-
-export function isDatabaseConfigured() {
-  return Boolean(process.env.POSTGRES_URL);
-}
-
-export async function ensureAnalyticsTable() {
-  if (!isDatabaseConfigured()) return;
-  if (!tableReady) {
-    tableReady = sql`
-      CREATE TABLE IF NOT EXISTS usage_events (
-        id BIGSERIAL PRIMARY KEY,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        session_id TEXT NOT NULL,
-        event_type TEXT NOT NULL,
-        tab TEXT,
-        scan_mode TEXT,
-        label_code TEXT,
-        sheet_count INTEGER,
-        user_agent TEXT,
-        metadata JSONB
-      )
-    `.then(() => undefined);
-  }
-  await tableReady;
-}
+export { isDatabaseConfigured };
 
 export type UsageEventInput = {
   sessionId: string;
@@ -36,10 +12,13 @@ export type UsageEventInput = {
   sheetCount?: number | null;
   userAgent?: string | null;
   metadata?: Record<string, unknown> | null;
+  orgId?: string | null;
+  userId?: string | null;
 };
 
 export async function insertUsageEvent(input: UsageEventInput) {
-  await ensureAnalyticsTable();
+  if (!isDatabaseConfigured()) return;
+  await ensureSchema();
   const metadata = input.metadata ? JSON.stringify(input.metadata) : null;
   await sql`
     INSERT INTO usage_events (
@@ -50,7 +29,9 @@ export async function insertUsageEvent(input: UsageEventInput) {
       label_code,
       sheet_count,
       user_agent,
-      metadata
+      metadata,
+      org_id,
+      user_id
     ) VALUES (
       ${input.sessionId},
       ${input.event},
@@ -59,7 +40,9 @@ export async function insertUsageEvent(input: UsageEventInput) {
       ${input.labelCode ?? null},
       ${input.sheetCount ?? null},
       ${input.userAgent ?? null},
-      ${metadata}
+      ${metadata},
+      ${input.orgId ?? null},
+      ${input.userId ?? null}
     )
   `;
 }

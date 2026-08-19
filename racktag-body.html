@@ -13,6 +13,7 @@
     <div class="tab" data-tab="cart">Cart Number</div>
     <div class="tab" data-tab="cartbin">Cart Bin Number</div>
     <div class="tab" data-tab="scan">From Barcode Photo</div>
+    <div class="tab" data-tab="qr">QR Generator</div>
   </div>
 
   <div class="grid">
@@ -112,6 +113,18 @@
           <label for="scan-value">Scanned value</label>
           <input type="text" id="scan-value" placeholder="Decoded value appears here — or type it manually">
           <div class="err-msg">Enter or scan a value.</div>
+        </div>
+      </div>
+
+      <!-- QR GENERATOR -->
+      <div class="tab-panel" id="panel-qr" style="display:none;">
+        <div class="template-strip">Any text or URL</div>
+
+        <div class="field" id="qr-text-field">
+          <label for="qr-text">QR content</label>
+          <textarea id="qr-text" rows="4" placeholder="Enter a URL, plain text, Wi‑Fi string, or any payload…"></textarea>
+          <div class="hint">The QR code updates live as you type.</div>
+          <div class="err-msg">Enter some text to encode.</div>
         </div>
       </div>
 
