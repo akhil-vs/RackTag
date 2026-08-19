@@ -26,7 +26,7 @@
   const tabs = document.querySelectorAll('.tab');
   const panels = { bin:'panel-bin', cart:'panel-cart', cartbin:'panel-cartbin', scan:'panel-scan', qr:'panel-qr' };
   const typeLabels = { bin:'Bin location', cart:'Cart number', cartbin:'Cart bin number', scan:'Scanned barcode', qr:'Custom QR' };
-  let activeTab = 'bin';
+  let activeTab = 'qr';
 
   const ANALYTICS_OPT_KEY = 'racktag_analytics_opt_in';
   const ANALYTICS_SESSION_KEY = 'racktag_analytics_session';
@@ -71,7 +71,6 @@
     if(!banner){
       banner = document.createElement('div');
       banner.id = 'usageBanner';
-      banner.style.cssText = 'padding:8px 28px;font-size:12px;background:#23262B;color:#EDEAE1;border-bottom:2px solid #F5C400';
       const topbar = document.querySelector('.topbar');
       if(topbar && topbar.parentNode) topbar.parentNode.insertBefore(banner, topbar.nextSibling);
     }

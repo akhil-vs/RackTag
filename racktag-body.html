@@ -9,19 +9,31 @@
 
 <div class="wrap">
   <div class="tabs">
-    <div class="tab active" data-tab="bin">Bin Location</div>
+    <div class="tab active" data-tab="qr">QR Generator</div>
+    <div class="tab" data-tab="bin">Bin Location</div>
     <div class="tab" data-tab="cart">Cart Number</div>
     <div class="tab" data-tab="cartbin">Cart Bin Number</div>
     <div class="tab" data-tab="scan">From Barcode Photo</div>
-    <div class="tab" data-tab="qr">QR Generator</div>
   </div>
 
   <div class="grid">
     <!-- FORM PANEL -->
     <div class="panel panel-form">
 
+      <!-- QR GENERATOR -->
+      <div class="tab-panel" id="panel-qr">
+        <div class="template-strip">Any text or URL</div>
+
+        <div class="field" id="qr-text-field">
+          <label for="qr-text">QR content</label>
+          <textarea id="qr-text" rows="4" placeholder="Enter a URL, plain text, Wi‑Fi string, or any payload…"></textarea>
+          <div class="hint">The QR code updates live as you type.</div>
+          <div class="err-msg">Enter some text to encode.</div>
+        </div>
+      </div>
+
       <!-- BIN LOCATION -->
-      <div class="tab-panel" id="panel-bin">
+      <div class="tab-panel" id="panel-bin" style="display:none;">
         <div class="template-strip">P-01-A-XXX-Y-ZZZZ</div>
 
         <div class="field" id="bin-xxx-field">
@@ -116,18 +128,6 @@
         </div>
       </div>
 
-      <!-- QR GENERATOR -->
-      <div class="tab-panel" id="panel-qr" style="display:none;">
-        <div class="template-strip">Any text or URL</div>
-
-        <div class="field" id="qr-text-field">
-          <label for="qr-text">QR content</label>
-          <textarea id="qr-text" rows="4" placeholder="Enter a URL, plain text, Wi‑Fi string, or any payload…"></textarea>
-          <div class="hint">The QR code updates live as you type.</div>
-          <div class="err-msg">Enter some text to encode.</div>
-        </div>
-      </div>
-
       <div class="btn-row">
         <button class="btn accent" id="addToSheetBtn">+ Add to print sheet</button>
         <button class="btn secondary" id="downloadBtn">Download PNG</button>
@@ -138,14 +138,14 @@
     <div class="preview-col">
       <div class="preview-head">
         <h2>Live label</h2>
-        <span id="typeLabel">Bin location</span>
+        <span id="typeLabel">Custom QR</span>
       </div>
 
       <div class="tag-stage">
         <div class="tag">
-          <div class="eyebrow" id="tagEyebrow">Bin Location</div>
+          <div class="eyebrow" id="tagEyebrow">Custom QR</div>
           <div class="qr-holder" id="qrHolder"></div>
-          <div class="code" id="tagCode">P-01-A-101-A-1000</div>
+          <div class="code" id="tagCode">—</div>
           <div class="ticks" id="ticks"></div>
         </div>
       </div>
