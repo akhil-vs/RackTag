@@ -8,6 +8,13 @@ export const metadata: Metadata = {
   description:
     "Build QR tags for bin locations, carts, and cart bins. Pick the variable segments, print or save the label art.",
   themeColor: "#121212",
+  icons: {
+    icon: [
+      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+      { url: "/racktag-icon.png", sizes: "452x452", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

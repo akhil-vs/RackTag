@@ -93,32 +93,23 @@
   }
   .topbar .brand{
     display:flex;
-    align-items:center;
-    gap:12px;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:0;
     min-width:0;
   }
-  .topbar .brand-icon{
-    width:36px;
-    height:36px;
-    flex-shrink:0;
-    color:var(--yellow);
+  .brand-logo{
+    height:52px;
+    width:auto;
+    display:block;
   }
-  .topbar .brand-text{ min-width:0; }
-  .topbar h1{
-    font-size:26px;
-    font-weight:700;
-    margin:0;
-    color:var(--topbar-title);
-    line-height:1.1;
-  }
-  .topbar .brand small{
+  .brand-tagline{
     font-family:'IBM Plex Mono', monospace;
-    text-transform:none;
-    letter-spacing:0;
     font-size:11px;
     color:var(--topbar-subtitle);
-    display:block;
-    margin-top:2px;
+    margin:4px 0 0;
+    letter-spacing:0;
+    text-transform:none;
   }
   .topbar p{
     display:none;
@@ -755,9 +746,8 @@
     .topbar{
       padding:14px 16px 12px;
     }
-    .topbar h1{ font-size:22px; }
     .topbar .brand{ gap:10px; }
-    .topbar .brand-icon{ width:32px; height:32px; }
+    .brand-logo{ height:44px; }
     .preview-head{
       flex-direction:column;
       align-items:flex-start;
@@ -780,8 +770,7 @@
   }
 
   @media (max-width:480px){
-    .topbar h1{ font-size:20px; }
-    .topbar .brand small{ font-size:10px; }
+    .brand-tagline{ font-size:10px; }
     .topbar-head{ align-items:center; }
     .theme-picker select{ min-width:92px; font-size:10px; padding:5px 8px; }
     .tag-stage{ padding:20px 12px; min-height:260px; }
