@@ -124,17 +124,12 @@ if(window.caches){
 
   /* tabs styled like rack shelf dividers */
   .tabs{
-    display:flex;
+    display:grid;
+    grid-template-columns:repeat(5, minmax(0, 1fr));
     gap:4px;
     margin-bottom:-2px;
-    overflow-x:auto;
-    overscroll-behavior-x:contain;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
   }
-  .tabs::-webkit-scrollbar{ display:none; }
   .tab{
-    flex:1 0 auto;
     min-width:0;
     background:var(--concrete-dark);
     border:2px solid var(--ink);
@@ -149,15 +144,15 @@ if(window.caches){
     cursor:pointer;
     color:#6b6656;
     clip-path:polygon(8% 0, 92% 0, 100% 100%, 0% 100%);
+    line-height:1.25;
+    overflow-wrap:break-word;
+    hyphens:auto;
   }
   .tab.active{
     background:var(--yellow);
     color:var(--ink);
     position:relative;
     z-index:2;
-  }
-  @media (min-width:641px){
-    .tab{ flex:1 1 0; }
   }
 
   .panel{
@@ -593,11 +588,10 @@ if(window.caches){
     .topbar::after{ width:44px; }
     .topbar h1{ font-size:24px; }
     .topbar .brand{ flex-wrap:wrap; gap:8px; }
+    .tabs{ grid-template-columns:repeat(3, minmax(0, 1fr)); }
     .tab{
-      flex:0 0 auto;
-      min-width:108px;
       font-size:11px;
-      padding:10px;
+      padding:10px 6px;
       letter-spacing:0.03em;
     }
     .preview-head{
@@ -638,10 +632,10 @@ if(window.caches){
     .topbar h1{ font-size:20px; }
     .topbar .brand small{ font-size:11px; }
     .topbar p{ font-size:11px; }
+    .tabs{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
     .tab{
-      min-width:92px;
       font-size:10px;
-      padding:9px 8px;
+      padding:9px 6px;
       clip-path:polygon(4% 0, 96% 0, 100% 100%, 0% 100%);
     }
     .tag-stage{ padding:20px 12px; min-height:260px; }
@@ -681,7 +675,7 @@ if(window.caches){
   }
 
   @media (max-width:360px){
-    .tab{ min-width:84px; }
+    .tab{ font-size:9.5px; padding:8px 4px; }
   }
 
   @media (min-width:1200px){
