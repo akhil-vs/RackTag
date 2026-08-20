@@ -113,12 +113,13 @@
       if(topbar && topbar.parentNode) topbar.parentNode.insertBefore(banner, topbar.nextSibling);
     }
     if(userContext && userContext.authenticated){
+      banner.style.display = '';
       const u = usageStatus;
       const limitText = u.limit == null ? 'unlimited' : (u.used + '/' + u.limit);
       const orgName = userContext.org && userContext.org.name ? userContext.org.name : 'Organization';
       banner.innerHTML = 'Signed in as <strong>' + userContext.user.name + '</strong> (' + orgName + ') · Plan: ' + u.plan + ' · Labels this month: ' + limitText + ' · <a href="/admin" style="color:#F5C400">Admin</a>';
     } else {
-      banner.innerHTML = 'Anonymous evaluation mode · <a href="/login" style="color:#F5C400">Sign in</a> for org templates, audit export, and billing';
+      banner.style.display = 'none';
     }
   }
 
