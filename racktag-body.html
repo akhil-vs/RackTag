@@ -8,7 +8,7 @@
         <div class="rt-badge" aria-hidden="true">RT<span class="rt-dot"></span></div>
         <div class="mobile-brand-copy">
           <div class="mobile-wordmark">Racktag <span class="pro-pill">Pro</span></div>
-          <div class="mobile-suite">Warehouse label suite</div>
+          <div class="mobile-suite">Warehouse suite</div>
         </div>
       </div>
     </div>
@@ -82,22 +82,60 @@
 
       <!-- BIN LOCATION -->
       <div class="tab-panel" id="panel-bin" style="display:none;">
-        <div class="template-strip">P-01-A-XXX-Y-ZZZZ</div>
+        <div class="syntax-card">
+          <div class="syntax-head">
+            <span class="syntax-mark" aria-hidden="true"></span>
+            <span class="syntax-title">Bin location encoder</span>
+            <span class="format-badge is-valid" id="binFormatBadge">
+              <b id="binFormatTitle">Format valid</b>
+              <span class="format-sub"><i></i><em id="binFormatSub">Verified</em></span>
+            </span>
+          </div>
+          <div class="syntax-kicker">Constructed syntax payload</div>
+          <div class="syntax-code" id="binSyntax" aria-live="polite"></div>
+        </div>
+        <div class="template-strip show-desktop">P-01-A-XXX-Y-ZZZZ</div>
 
         <div class="field" id="bin-xxx-field">
-          <label for="bin-xxx">Aisle position (XXX) · 101–113</label>
-          <input type="number" id="bin-xxx" min="101" max="113" value="101">
+          <div class="field-label-row">
+            <label for="bin-xxx">
+              <span class="show-desktop">Aisle position (XXX) · 101–113</span>
+              <span class="show-mobile">Aisle position (XXX) · 101–113</span>
+            </label>
+            <span class="field-meta show-mobile">Zone P-01</span>
+          </div>
+          <div class="stepper">
+            <button type="button" class="step" data-step="-1" data-target="bin-xxx" aria-label="Decrease aisle position">−</button>
+            <input type="number" id="bin-xxx" min="101" max="113" value="101">
+            <button type="button" class="step" data-step="1" data-target="bin-xxx" aria-label="Increase aisle position">+</button>
+          </div>
           <div class="err-msg">Enter a whole number between 101 and 113.</div>
         </div>
 
         <div class="field">
-          <label>Level (Y) · A–N</label>
+          <div class="field-label-row">
+            <label>
+              <span class="show-desktop">Level (Y) · A–N</span>
+              <span class="show-mobile">Level (Y) · A–N vertical tier</span>
+            </label>
+            <span class="field-meta show-mobile">Selected: <b id="binTierLabel">Tier A</b></span>
+          </div>
           <div class="btn-group" id="bin-y" data-value="A"></div>
         </div>
 
         <div class="field" id="bin-zzzz-field">
-          <label for="bin-zzzz">Bin ID (ZZZZ) · 1000–1999</label>
-          <input type="number" id="bin-zzzz" min="1000" max="1999" value="1000">
+          <div class="field-label-row">
+            <label for="bin-zzzz">
+              <span class="show-desktop">Bin ID (ZZZZ) · 1000–1999</span>
+              <span class="show-mobile">Bin ID (ZZZZ) · 1000–1999 slot</span>
+            </label>
+            <span class="field-meta show-mobile">Slot index</span>
+          </div>
+          <div class="stepper">
+            <button type="button" class="step" data-step="-1" data-target="bin-zzzz" aria-label="Decrease bin ID">−</button>
+            <input type="number" id="bin-zzzz" min="1000" max="1999" value="1000">
+            <button type="button" class="step" data-step="1" data-target="bin-zzzz" aria-label="Increase bin ID">+</button>
+          </div>
           <div class="err-msg">Enter a whole number between 1000 and 1999.</div>
         </div>
       </div>
@@ -180,12 +218,12 @@
         <button class="btn accent" id="addToSheetBtn" type="button">
           <svg class="btn-glyph show-mobile" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>
           <span class="show-desktop">+ Add to print sheet</span>
-          <span class="show-mobile btn-copy">Add to print<br>sheet</span>
+          <span class="show-mobile btn-copy">Add to print sheet</span>
         </button>
         <button class="btn secondary" id="downloadBtn" type="button">
           <svg class="btn-glyph show-mobile" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M8 11l4 4 4-4"/><path d="M5 20h14"/></svg>
           <span class="show-desktop">Download PNG</span>
-          <span class="show-mobile btn-copy">Download PNG<br>label</span>
+          <span class="show-mobile btn-copy">Download PNG label</span>
         </button>
       </div>
     </div>
@@ -197,15 +235,14 @@
           <h2>
             <span class="show-desktop">Live label</span>
             <span class="show-mobile preview-title">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l12-7z"/></svg>
-              Physical tag<br>preview
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9l7 7-7 7H4z"/><circle cx="8.5" cy="11.5" r="1.2"/></svg>
+              Physical tag preview
             </span>
           </h2>
           <span id="typeLabel" class="show-desktop">Custom QR</span>
-          <span class="die-cut">2.5″ × 1.5″<br>die-cut</span>
-          <button type="button" class="zoom-btn" id="zoomBtn" aria-pressed="false">
+          <span class="die-cut">3.0″ × 2.0″<br>die-cut</span>
+          <button type="button" class="zoom-btn" id="zoomBtn" aria-pressed="false" aria-label="Zoom">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2M11 8v6M8 11h6"/></svg>
-            Zoom
           </button>
         </div>
 
@@ -237,8 +274,8 @@
             <svg class="sheet-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V4h10v4"/><path d="M6 17H4v-5h16v5h-2"/><rect x="7" y="13" width="10" height="7"/></svg>
             <span class="sheet-heading-copy">
               <span class="show-desktop">Print sheet</span>
-              <span class="show-mobile sheet-name">Print queue</span>
-              <span class="sheet-count">(<span id="sheetCount">0</span> labels)</span>
+              <span class="show-mobile sheet-name">Print sheet</span>
+              <span class="sheet-count">(<span id="sheetCount">0</span> <span class="show-desktop">labels</span><span class="show-mobile">labels ready</span>)</span>
             </span>
           </h2>
           <div class="btn-row" style="margin:0;">
@@ -287,7 +324,7 @@
     <span>Bin #</span>
   </button>
   <button type="button" class="app-nav-item" data-tab="scan" aria-label="From Barcode Photo">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.5"/><path d="M12 9v6M9 12h6"/></svg>
-    <span>Photo</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="13" r="3.2"/></svg>
+    <span>Scan</span>
   </button>
 </nav>

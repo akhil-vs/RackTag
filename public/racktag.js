@@ -332,7 +332,49 @@
       statusLine.classList.remove('ok');
     }
     updateEncoderChrome(code);
+    renderBinSyntax(code);
     return code;
+  }
+
+  function renderBinSyntax(code){
+    const root = document.getElementById('binSyntax');
+    if(!root) return;
+    const yEl = document.getElementById('bin-y');
+    const y = yEl && yEl.dataset.value ? yEl.dataset.value : 'A';
+    const xxx = document.getElementById('bin-xxx') ? document.getElementById('bin-xxx').value : '';
+    const zzzz = document.getElementById('bin-zzzz') ? document.getElementById('bin-zzzz').value : '';
+    const tier = document.getElementById('binTierLabel');
+    if(tier) tier.textContent = 'Tier ' + y;
+    root.replaceChildren();
+    function piece(text, hot){
+      const node = document.createElement(hot ? 'b' : 'span');
+      node.textContent = text;
+      root.appendChild(node);
+    }
+    function sep(){
+      const node = document.createElement('span');
+      node.className = 'sep';
+      node.textContent = '-';
+      root.appendChild(node);
+    }
+    piece('P-01');
+    sep();
+    piece('A');
+    sep();
+    piece(xxx || '—', true);
+    sep();
+    piece(y, true);
+    sep();
+    piece(zzzz || '—', true);
+    const badge = document.getElementById('binFormatBadge');
+    const title = document.getElementById('binFormatTitle');
+    const sub = document.getElementById('binFormatSub');
+    if(badge){
+      badge.classList.toggle('is-valid', !!code);
+      badge.classList.toggle('is-invalid', !code);
+    }
+    if(title) title.textContent = code ? 'Format valid' : 'Format invalid';
+    if(sub) sub.textContent = code ? 'Verified' : 'Check fields';
   }
 
   ['cart-xxx', 'cartbin-xxx'].forEach(id=>{
@@ -998,6 +1040,23 @@
       trackUsage('theme_change', { metadata: { theme: next } });
     });
   }
+
+  document.querySelectorAll('.step').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const input = document.getElementById(btn.dataset.target);
+      if(!input) return;
+      const dir = Number(btn.dataset.step) || 0;
+      const min = Number(input.min);
+      const max = Number(input.max);
+      let value = parseInt(input.value, 10);
+      if(!Number.isFinite(value)) value = Number.isFinite(min) ? min : 0;
+      value += dir;
+      if(Number.isFinite(min)) value = Math.max(min, value);
+      if(Number.isFinite(max)) value = Math.min(max, value);
+      input.value = String(value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  });
 
   const zoomBtn = document.getElementById('zoomBtn');
   const tagStage = document.querySelector('.tag-stage');
