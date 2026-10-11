@@ -1046,27 +1046,31 @@
       z-index:100;
       background:var(--bg);
       border-top:1px solid var(--border);
-      padding:6px 6px calc(6px + env(safe-area-inset-bottom));
-      justify-content:space-around;
-      gap:4px;
+      padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+      justify-content:stretch;
+      gap:2px;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
     }
+    .app-nav::-webkit-scrollbar{ display:none; }
     .app-nav-item{
-      flex:1;
+      flex:1 1 0;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
       gap:3px;
-      padding:8px 4px;
+      padding:8px 2px;
       border:none;
       background:transparent;
       color:var(--text-muted);
-      font-size:9.5px;
+      font-size:9px;
       letter-spacing:0.02em;
       cursor:pointer;
       border-radius:10px;
-      min-width:0;
-      max-width:88px;
+      min-width:56px;
+      max-width:none;
     }
     .app-nav-item.active{
       background:var(--yellow);
@@ -1889,15 +1893,32 @@
       border-color:#3a4150;
       box-shadow:none;
     }
-    .sheet-item .sheet-qr,
-    .sheet-item canvas,
-    .sheet-item img,
-    .sheet-new{ display:none !important; }
+    .sheet-item .sheet-qr{
+      order:1;
+      flex:0 0 52px;
+      width:52px;
+      height:52px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fbf7e9;
+      border:1px solid #3a4150;
+      border-radius:8px;
+      overflow:hidden;
+    }
+    .sheet-item .sheet-qr canvas,
+    .sheet-item .sheet-qr img{
+      display:block !important;
+      width:100% !important;
+      height:auto !important;
+      max-width:100%;
+    }
     .sheet-chip-top{
       display:flex;
       align-items:center;
       gap:6px;
-      order:1;
+      order:2;
+      flex:0 0 auto;
       padding:0;
       margin:0;
     }
@@ -1923,7 +1944,7 @@
       line-height:1.2;
     }
     .sheet-item .code{
-      order:2;
+      order:3;
       flex:1;
       min-width:0;
       color:#f4f5f7;
@@ -1937,7 +1958,7 @@
       overflow-wrap:normal;
     }
     .sheet-item .remove{
-      order:3;
+      order:4;
       position:static;
       background:transparent;
       color:#9aa0ab;

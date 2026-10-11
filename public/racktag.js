@@ -5,6 +5,7 @@
 
   function buildButtonGroup(id, values){
     const group = document.getElementById(id);
+    if(!group) return;
     values.forEach(v=>{
       const btn = document.createElement('div');
       btn.className = 'opt' + (v === group.dataset.value ? ' selected' : '');
@@ -90,7 +91,12 @@
   }
 
   function getTemplates(){
-    return orgTemplates || DEFAULT_TEMPLATES;
+    if(!orgTemplates) return DEFAULT_TEMPLATES;
+    return {
+      bin: { ...DEFAULT_TEMPLATES.bin, ...orgTemplates.bin },
+      cart: { ...DEFAULT_TEMPLATES.cart, ...orgTemplates.cart },
+      cartbin: { ...DEFAULT_TEMPLATES.cartbin, ...orgTemplates.cartbin }
+    };
   }
 
   async function loadOrgContext(){
@@ -187,22 +193,37 @@
     }).catch(function(){});
   }
 
+  function activateTab(tabKey){
+    if(!tabKey || !panels[tabKey]) return;
+    const nextPanel = document.getElementById(panels[tabKey]);
+    if(!nextPanel) return;
+
+    if(activeTab === 'scan' && tabKey !== 'scan'){
+      try { stopCamera(); } catch(_) {}
+    }
+
+    document.querySelectorAll('.tab, .app-nav-item').forEach(x=>{
+      x.classList.toggle('active', x.dataset.tab === tabKey);
+    });
+    Object.values(panels).forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.style.display = 'none';
+    });
+
+    activeTab = tabKey;
+    nextPanel.style.display = 'block';
+
+    const typeLabel = document.getElementById('typeLabel');
+    const tagEyebrow = document.getElementById('tagEyebrow');
+    if(typeLabel) typeLabel.textContent = typeLabels[activeTab];
+    if(tagEyebrow) tagEyebrow.textContent = typeLabels[activeTab];
+    trackUsage('tab_change', { metadata: { tab: activeTab } });
+    try { refresh(); } catch(err) { console.error('RackTag refresh failed', err); }
+  }
+
   tabs.forEach(t=>{
     t.addEventListener('click', ()=>{
-      const tabKey = t.dataset.tab;
-      document.querySelectorAll('.tab, .app-nav-item').forEach(x=>{
-        x.classList.toggle('active', x.dataset.tab === tabKey);
-      });
-      Object.values(panels).forEach(id=>document.getElementById(id).style.display='none');
-      if(activeTab === 'scan' && tabKey !== 'scan' && typeof stopCamera === 'function'){
-        stopCamera();
-      }
-      activeTab = tabKey;
-      document.getElementById(panels[activeTab]).style.display='block';
-      document.getElementById('typeLabel').textContent = typeLabels[activeTab];
-      document.getElementById('tagEyebrow').textContent = typeLabels[activeTab];
-      trackUsage('tab_change', { metadata: { tab: activeTab } });
-      refresh();
+      activateTab(t.dataset.tab);
     });
   });
 
@@ -397,7 +418,8 @@
     const val = valEl ? valEl.value.trim() : '';
     const modeLabel = document.getElementById('scanModeLabel');
     if(modeLabel){
-      const mode = typeof getScanMode === 'function' ? getScanMode() : 'barcode';
+      const modeEl = document.getElementById('scan-mode');
+      const mode = modeEl && modeEl.dataset.value ? modeEl.dataset.value : 'barcode';
       modeLabel.textContent = mode === 'text' ? 'Read text' : 'Barcode';
     }
     root.replaceChildren();
@@ -441,8 +463,6 @@
     el.addEventListener('change', refresh);
   });
 
-  refresh();
-
   // ---- live camera barcode + text scanning ----
   const scanVideoWrap = document.getElementById('scan-video-wrap');
   const scanVideo = document.getElementById('scan-video');
@@ -480,6 +500,7 @@
   });
 
   function getScanMode(){
+    if(!scanModeGroup) return 'barcode';
     return scanModeGroup.dataset.value || 'barcode';
   }
 
@@ -1136,5 +1157,8 @@
   }
   loadOrgContext().finally(function(){
     trackUsage('app_open');
+    try { refresh(); } catch(err) { console.error('RackTag refresh failed', err); }
   });
+
+  activateTab(activeTab);
 })();
