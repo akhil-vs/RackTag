@@ -541,6 +541,7 @@ if(window.caches){
 
   /* preview column */
   .preview-col{ display:flex; flex-direction:column; gap:20px; }
+  .preview-card{ display:flex; flex-direction:column; gap:20px; }
   .preview-head{
     display:flex; justify-content:space-between; align-items:baseline;
   }
@@ -710,6 +711,47 @@ if(window.caches){
     stroke-linejoin:round;
   }
 
+  .show-mobile,
+  .mobile-brand,
+  .mobile-tools,
+  .encoder-head,
+  .presets,
+  .live-sync,
+  .payload-clear,
+  .die-cut,
+  .zoom-btn,
+  .stage-scale,
+  .stage-height,
+  .tag-thermal,
+  .encoded-label,
+  .sheet-icon,
+  .sheet-chip-top{ display:none; }
+
+  .payload-wrap{ position:relative; }
+  .field-label-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:8px;
+  }
+  .field-label-row label{ flex:1; margin-bottom:6px; }
+  .sheet-heading{
+    margin:0;
+    font-size:16px;
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+  }
+  .sheet-count{
+    font-size:11px;
+    color:var(--text-muted);
+    font-weight:400;
+    letter-spacing:0;
+  }
+  #themeToggle .icon-sun{ display:none; }
+  #themeToggle.is-light .icon-moon{ display:none; }
+  #themeToggle.is-light .icon-sun{ display:block; }
+
   /* responsive */
   @media (max-width:960px){
     .grid{ grid-template-columns:1fr; }
@@ -847,6 +889,728 @@ if(window.caches){
     .app-nav-item svg{ width:20px; height:20px; }
   }
 
+  /* mobile home — warehouse label suite */
+  @media (max-width:960px){
+    .show-desktop{ display:none !important; }
+    span.show-mobile{ display:inline; }
+    .preview-title.show-mobile{ display:inline-flex; }
+    .sheet-name.show-mobile{ display:block; }
+    .btn-copy.show-mobile{ display:block; }
+
+    body{
+      background-color:#0c0e12;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size:28px 28px;
+      background-attachment:fixed;
+    }
+    .topbar{
+      background:transparent;
+      border-bottom:none;
+      padding:max(16px, env(safe-area-inset-top)) 16px 4px;
+    }
+    html{ background-color:#0c0e12; }
+    .topbar-head{ align-items:center; }
+    .mobile-brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .rt-badge{
+      position:relative;
+      width:40px;
+      height:40px;
+      border-radius:10px;
+      background:var(--yellow);
+      color:#141414;
+      font-family:'Oswald', sans-serif;
+      font-weight:700;
+      font-size:16px;
+      letter-spacing:0.02em;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 40px;
+    }
+    .rt-dot{
+      position:absolute;
+      right:-2px;
+      bottom:-2px;
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:#3ddc97;
+      border:2px solid #0c0e12;
+      box-shadow:0 0 8px rgba(61,220,151,0.7);
+    }
+    .mobile-wordmark{
+      font-family:'Oswald', sans-serif;
+      font-weight:600;
+      font-size:20px;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      color:var(--yellow);
+      line-height:1;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .pro-pill{
+      font-family:'Oswald', sans-serif;
+      font-size:9px;
+      font-weight:600;
+      letter-spacing:0.12em;
+      color:var(--yellow);
+      border:1px solid var(--yellow);
+      border-radius:4px;
+      padding:2px 5px 1px;
+      line-height:1.2;
+    }
+    .mobile-suite{
+      margin-top:4px;
+      font-size:9px;
+      letter-spacing:0.16em;
+      text-transform:uppercase;
+      color:#8d93a0;
+    }
+    .mobile-tools{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-shrink:0;
+    }
+    .icon-btn{
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      border:1px solid #2c313c;
+      background:#14171d;
+      color:#d5d8e0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+      cursor:pointer;
+    }
+    .icon-btn svg{
+      width:16px;
+      height:16px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:1.7;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .icon-btn:active{ transform:translateY(1px); }
+
+    .wrap{
+      padding:8px 12px 16px;
+      padding-left:max(12px, env(safe-area-inset-left));
+      padding-right:max(12px, env(safe-area-inset-right));
+    }
+    .grid{ gap:12px; }
+    .panel{
+      background:#14171e;
+      border:1px solid #2a2e38;
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.18);
+    }
+    .panel-form{ border-radius:18px; }
+    .preview-col{ gap:12px; }
+
+    .encoder-head{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:14px;
+    }
+    .encoder-mark{
+      width:9px;
+      height:9px;
+      border-radius:2px;
+      background:var(--yellow);
+      flex:0 0 9px;
+    }
+    .encoder-title{
+      font-family:'Oswald', sans-serif;
+      font-weight:600;
+      font-size:13px;
+      letter-spacing:0.05em;
+      text-transform:uppercase;
+      color:#f3f4f6;
+    }
+    .char-meter{
+      margin-left:auto;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:10px;
+      letter-spacing:0.06em;
+      text-transform:uppercase;
+      color:#8d93a0;
+      white-space:nowrap;
+    }
+    .char-meter b{
+      color:var(--yellow);
+      font-weight:600;
+    }
+    #panel-qr .field-label-row label{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:10px;
+      font-weight:500;
+      letter-spacing:0.08em;
+      color:#8d93a0;
+      margin-bottom:0;
+    }
+    .live-sync.on{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:10px;
+      font-weight:600;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:#3ddc97;
+      white-space:nowrap;
+    }
+    .live-sync i{
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#3ddc97;
+      box-shadow:0 0 8px rgba(61,220,151,0.85);
+    }
+    #qr-text{
+      min-height:48px;
+      height:48px;
+      resize:none;
+      overflow:hidden;
+      white-space:nowrap;
+      border-radius:12px;
+      border:1px solid #2c313c;
+      background:#0c0e12;
+      padding:13px 42px 13px 14px;
+      font-size:16px;
+      line-height:22px;
+      color:#f4f5f7;
+    }
+    #qr-text-field.error #qr-text{ border-color:var(--error); }
+    .payload-clear{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:absolute;
+      top:50%;
+      right:8px;
+      transform:translateY(-50%);
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      border:1px solid #3a4050;
+      background:#1a1e27;
+      color:#c5cad3;
+      font-size:16px;
+      line-height:1;
+      cursor:pointer;
+      padding:0;
+    }
+    .payload-clear[hidden]{ display:none !important; }
+    .presets{
+      display:flex;
+      align-items:center;
+      gap:5px;
+      flex-wrap:nowrap;
+      margin:2px 0 12px;
+    }
+    .presets-label{
+      font-size:9px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:#8d93a0;
+      margin-right:2px;
+      flex:0 0 auto;
+    }
+    .preset{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:9px;
+      font-weight:600;
+      letter-spacing:0.03em;
+      text-transform:uppercase;
+      color:#d7dbe3;
+      background:#10131a;
+      border:1px solid #343a46;
+      border-radius:999px;
+      padding:6px 7px;
+      cursor:pointer;
+      flex:0 0 auto;
+    }
+    .preset:active, .preset.is-on{
+      border-color:var(--yellow);
+      color:var(--yellow);
+    }
+
+    .actions{
+      flex-direction:row;
+      flex-wrap:nowrap;
+      align-items:stretch;
+      gap:10px;
+      margin-top:2px;
+    }
+    .actions .btn{
+      width:auto;
+      flex:1 1 0;
+      min-height:64px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      text-align:left;
+      line-height:1.15;
+      padding:10px 12px;
+      font-size:13px;
+    }
+    .actions .btn-glyph,
+    #printBtn .btn-glyph{
+      display:block;
+      width:22px;
+      height:22px;
+      flex:0 0 22px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:1.8;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    #addToSheetBtn{
+      box-shadow:0 8px 22px rgba(255,215,0,0.16);
+    }
+    #downloadBtn{
+      background:#1a1e27;
+      color:#f2f3f5;
+      border-color:#323846;
+    }
+    #downloadBtn .btn-glyph{ stroke:var(--yellow); }
+
+    .preview-card{ display:flex; flex-direction:column; gap:10px; }
+    .preview-head{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto auto;
+      align-items:center;
+      gap:8px;
+    }
+    .preview-head h2{
+      font-size:13px;
+      letter-spacing:0.04em;
+      line-height:1.05;
+      margin:0;
+    }
+    .preview-title{
+      align-items:center;
+      gap:8px;
+      color:#f3f4f6;
+    }
+    .preview-title svg{
+      width:14px;
+      height:14px;
+      flex:0 0 14px;
+      fill:var(--yellow);
+      stroke:none;
+    }
+    .preview-head .die-cut{
+      display:block;
+      border:1px solid #3a4150;
+      border-radius:8px;
+      padding:5px 8px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:9px;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      text-align:center;
+      line-height:1.25;
+      color:#c5cad6;
+      background:#10131a;
+    }
+    .preview-head .zoom-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      border:none;
+      background:transparent;
+      color:var(--yellow);
+      font-family:'Oswald', sans-serif;
+      font-size:11px;
+      font-weight:600;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      cursor:pointer;
+      padding:4px 0 4px 2px;
+    }
+    .preview-head .zoom-btn svg{
+      width:14px;
+      height:14px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:1.8;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .preview-head .zoom-btn[aria-pressed="true"]{ color:#fff; }
+    .status-line{ display:none; }
+
+    .tag-stage{
+      position:relative;
+      min-height:228px;
+      padding:28px 14px 26px;
+      border:1px solid #262b36;
+      border-radius:12px;
+      background-color:#090b10;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size:22px 22px;
+    }
+    .stage-scale{
+      display:flex;
+      justify-content:space-between;
+      position:absolute;
+      top:8px;
+      left:12px;
+      right:12px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:9px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:#6d7380;
+    }
+    .stage-height{
+      display:block;
+      position:absolute;
+      right:12px;
+      bottom:8px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:9px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:#6d7380;
+    }
+    .tag{
+      max-width:none;
+      width:100%;
+      padding:12px 12px 12px 14px;
+      border:none;
+      border-radius:8px;
+      box-shadow:0 14px 28px rgba(0,0,0,0.45);
+    }
+    .tag-stage.is-zoomed .tag{ transform:scale(1.08); }
+    .tag-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding-left:16px;
+      margin-bottom:8px;
+      min-height:18px;
+    }
+    .tag-thermal{
+      display:block;
+      font-family:'Oswald', sans-serif;
+      font-size:9px;
+      font-weight:600;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      color:#3d3d3d;
+    }
+    .tag .eyebrow{
+      margin:0;
+      background:var(--yellow);
+      color:#161616;
+      font-size:8px;
+      letter-spacing:0.08em;
+      padding:3px 7px;
+      border-radius:4px;
+      line-height:1.2;
+    }
+    .tag-main{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .tag .qr-holder{
+      width:104px;
+      flex:0 0 104px;
+      min-height:104px;
+      margin:0;
+    }
+    .tag-copy{ min-width:0; flex:1; }
+    .encoded-label{
+      display:block;
+      font-family:'Oswald', sans-serif;
+      font-size:8px;
+      font-weight:600;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      color:#6e6860;
+      margin-bottom:3px;
+    }
+    .tag .code{
+      text-align:left;
+      font-size:12px;
+      font-weight:500;
+      letter-spacing:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .tag .ticks{ justify-content:flex-start; margin-top:8px; gap:1.5px; }
+    .tag .ticks div{ width:2px; height:20px !important; }
+
+    .sheet-head{
+      flex-direction:row;
+      flex-wrap:nowrap;
+      align-items:center;
+      gap:8px;
+    }
+    .sheet-heading{ font-size:14px; line-height:1.05; align-items:center; }
+    .sheet-icon{
+      display:block;
+      width:16px;
+      height:16px;
+      flex:0 0 16px;
+      stroke:var(--yellow);
+      fill:none;
+      stroke-width:1.7;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .sheet-heading-copy{ display:block; min-width:0; }
+    .sheet-count{
+      display:block;
+      font-family:'Oswald', sans-serif;
+      font-size:13px;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+    }
+    #sheetCount{ color:var(--yellow); font-weight:600; }
+    .sheet-head .btn-row{
+      width:auto;
+      flex-direction:row;
+      flex-wrap:nowrap;
+      align-items:center;
+      gap:6px;
+      margin-left:auto;
+    }
+    .sheet-head .btn{
+      width:auto;
+      flex:0 0 auto;
+      min-height:0;
+    }
+    #clearSheetBtn{
+      background:transparent;
+      border:none;
+      color:#9aa0ab;
+      letter-spacing:0.12em;
+      padding:8px 6px;
+      font-size:12px;
+    }
+    #printBtn{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:12px;
+      padding:10px 12px;
+      box-shadow:0 0 18px rgba(255,215,0,0.45);
+      font-size:12px;
+    }
+    #printBtn .btn-glyph{
+      width:14px;
+      height:14px;
+      flex-basis:14px;
+    }
+    .sheet-grid{
+      display:flex;
+      grid-template-columns:none;
+      gap:10px;
+      margin-top:14px;
+      overflow-x:auto;
+      padding-bottom:4px;
+      scroll-snap-type:x mandatory;
+    }
+    .sheet-empty{
+      flex:1 0 100%;
+      border:none;
+      text-align:left;
+      padding:4px 0 0;
+    }
+    .sheet-item{
+      flex:0 0 132px;
+      width:132px;
+      min-width:132px;
+      max-width:132px;
+      scroll-snap-align:start;
+      background:#10131a;
+      border:1px solid #2e3440;
+      border-radius:14px;
+      padding:10px 12px 12px;
+      text-align:left;
+      min-height:78px;
+      overflow:hidden;
+    }
+    .sheet-item.is-new{
+      border-color:var(--yellow);
+      box-shadow:0 0 0 1px rgba(255,215,0,0.28);
+    }
+    .sheet-item .sheet-qr,
+    .sheet-item canvas,
+    .sheet-item img{ display:none !important; }
+    .sheet-chip-top{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding-right:16px;
+      margin-bottom:8px;
+    }
+    .sheet-index{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:10px;
+      font-weight:600;
+      color:#e8eaef;
+      border:1px solid #3a4150;
+      border-radius:4px;
+      padding:2px 5px;
+      line-height:1.2;
+    }
+    .sheet-new{
+      font-family:'Oswald', sans-serif;
+      font-size:8px;
+      font-weight:700;
+      letter-spacing:0.08em;
+      background:var(--yellow);
+      color:#161616;
+      border-radius:3px;
+      padding:2px 4px;
+      line-height:1.2;
+    }
+    .sheet-item .code{
+      color:#f4f5f7;
+      font-size:11px;
+      text-align:left;
+      margin-top:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      word-break:normal;
+      overflow-wrap:normal;
+    }
+    .sheet-item .remove{
+      background:transparent;
+      color:#9aa0ab;
+      width:22px;
+      height:22px;
+      font-size:16px;
+      top:8px;
+      right:6px;
+    }
+
+    .app-nav{
+      background:#0c0e12;
+      border-top:1px solid #222733;
+      padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+    }
+    .app-nav-item{
+      background:transparent;
+      color:#8b919c;
+      border-radius:0;
+      max-width:none;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:9px;
+      font-weight:600;
+      letter-spacing:0.06em;
+      text-transform:uppercase;
+      gap:4px;
+      padding:6px 2px 4px;
+    }
+    .app-nav-item.active{
+      background:transparent;
+      color:var(--yellow);
+    }
+    .app-nav-item svg{ width:22px; height:22px; }
+
+    .template-strip{ border-radius:8px; }
+  }
+
+  @media (max-width:960px){
+    [data-theme="light"] html{ background-color:#EDEAE1; }
+    [data-theme="light"] body{
+      background-color:#EDEAE1;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.045) 1px, transparent 1px);
+    }
+    [data-theme="light"] .rt-dot{ border-color:#EDEAE1; }
+    [data-theme="light"] .mobile-suite,
+    [data-theme="light"] .char-meter,
+    [data-theme="light"] #panel-qr .field-label-row label,
+    [data-theme="light"] .presets-label{ color:#6b6656; }
+    [data-theme="light"] .encoder-title,
+    [data-theme="light"] .preview-title{ color:#1E1E1E; }
+    [data-theme="light"] .icon-btn{
+      background:#fff;
+      border-color:#C9C3B2;
+      color:#1E1E1E;
+    }
+    [data-theme="light"] .panel{
+      background:#fff;
+      border-color:#D9D3C4;
+      box-shadow:none;
+    }
+    [data-theme="light"] #qr-text{
+      background:#F7F4EC;
+      border-color:#C9C3B2;
+      color:#1E1E1E;
+    }
+    [data-theme="light"] .payload-clear{
+      background:#fff;
+      border-color:#C9C3B2;
+      color:#1E1E1E;
+    }
+    [data-theme="light"] .preset{
+      background:#F7F4EC;
+      border-color:#C9C3B2;
+      color:#1E1E1E;
+    }
+    [data-theme="light"] #downloadBtn{
+      background:#23262B;
+      color:#F7F4EC;
+      border-color:#23262B;
+    }
+    [data-theme="light"] .die-cut{
+      background:#F7F4EC;
+      border-color:#C9C3B2;
+      color:#3A3F46;
+    }
+    [data-theme="light"] .tag-stage{
+      background-color:#D9D4C8;
+      border-color:#C9C3B2;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
+    }
+    [data-theme="light"] .sheet-item{
+      background:#F7F4EC;
+      border-color:#C9C3B2;
+    }
+    [data-theme="light"] .sheet-item .code,
+    [data-theme="light"] .sheet-index{ color:#1E1E1E; }
+    [data-theme="light"] .app-nav{
+      background:#23262B;
+      border-top-color:#23262B;
+    }
+  }
+
+
   @media (min-width:1200px){
     .wrap{ padding:32px; }
   }
@@ -888,16 +1652,32 @@ if(window.caches){
 <div class="topbar">
   <div class="topbar-head">
     <div class="brand">
-      <img src="/racktag-logo.png" alt="RACKTAG" class="brand-logo" width="977" height="255">
-      <p class="brand-tagline">warehouse label generator</p>
+      <img src="/racktag-logo.png" alt="RACKTAG" class="brand-logo show-desktop" width="977" height="255">
+      <p class="brand-tagline show-desktop">warehouse label generator</p>
+      <div class="mobile-brand">
+        <div class="rt-badge" aria-hidden="true">RT<span class="rt-dot"></span></div>
+        <div class="mobile-brand-copy">
+          <div class="mobile-wordmark">Racktag <span class="pro-pill">Pro</span></div>
+          <div class="mobile-suite">Warehouse label suite</div>
+        </div>
+      </div>
     </div>
-    <div class="theme-picker">
+    <div class="theme-picker show-desktop">
       <label for="themeSelect">Theme</label>
       <select id="themeSelect" aria-label="Color theme">
         <option value="dark">Dark</option>
         <option value="light">Light</option>
         <option value="system">System</option>
       </select>
+    </div>
+    <div class="mobile-tools">
+      <button type="button" class="icon-btn" id="clearDraftBtn" aria-label="Clear current label">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M7 7l1 13h8l1-13"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
+      <button type="button" class="icon-btn" id="themeToggle" aria-label="Toggle color theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
+      </button>
     </div>
   </div>
   <p>Build QR tags for bin locations, carts, and cart bins. Pick the variable segments, print or save the label art.</p>
@@ -918,13 +1698,35 @@ if(window.caches){
 
       <!-- QR GENERATOR -->
       <div class="tab-panel" id="panel-qr">
-        <div class="template-strip">Any text or URL</div>
+        <div class="encoder-head">
+          <span class="encoder-mark" aria-hidden="true"></span>
+          <span class="encoder-title">Custom payload encoder</span>
+          <span class="char-meter"><b id="charCount">0</b> / 256 chars</span>
+        </div>
+        <div class="template-strip show-desktop">Any text or URL</div>
 
         <div class="field" id="qr-text-field">
-          <label for="qr-text">QR content</label>
-          <textarea id="qr-text" rows="4" placeholder="Enter a URL, plain text, Wi‑Fi string, or any payload…"></textarea>
-          <div class="hint">The QR code updates live as you type.</div>
+          <div class="field-label-row">
+            <label for="qr-text">
+              <span class="show-desktop">QR content</span>
+              <span class="show-mobile">Payload data (raw / url)</span>
+            </label>
+            <span class="live-sync" id="liveSync"><i></i>Live synced</span>
+          </div>
+          <div class="payload-wrap">
+            <textarea id="qr-text" rows="4" maxlength="256" placeholder="https:// or any payload"></textarea>
+            <button type="button" class="payload-clear" id="clearPayloadBtn" aria-label="Clear payload" hidden>&times;</button>
+          </div>
+          <div class="hint show-desktop">The QR code updates live as you type.</div>
           <div class="err-msg">Enter some text to encode.</div>
+        </div>
+
+        <div class="presets">
+          <span class="presets-label">Presets:</span>
+          <button type="button" class="preset" data-preset="url">+ URL</button>
+          <button type="button" class="preset" data-preset="bin">+ Bin loc</button>
+          <button type="button" class="preset" data-preset="wifi">+ Wi-Fi</button>
+          <button type="button" class="preset" data-preset="serial">+ Serial</button>
         </div>
       </div>
 
@@ -1024,40 +1826,82 @@ if(window.caches){
         </div>
       </div>
 
-      <div class="btn-row">
-        <button class="btn accent" id="addToSheetBtn">+ Add to print sheet</button>
-        <button class="btn secondary" id="downloadBtn">Download PNG</button>
+      <div class="btn-row actions">
+        <button class="btn accent" id="addToSheetBtn" type="button">
+          <svg class="btn-glyph show-mobile" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>
+          <span class="show-desktop">+ Add to print sheet</span>
+          <span class="show-mobile btn-copy">Add to print<br>sheet</span>
+        </button>
+        <button class="btn secondary" id="downloadBtn" type="button">
+          <svg class="btn-glyph show-mobile" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M8 11l4 4 4-4"/><path d="M5 20h14"/></svg>
+          <span class="show-desktop">Download PNG</span>
+          <span class="show-mobile btn-copy">Download PNG<br>label</span>
+        </button>
       </div>
     </div>
 
     <!-- PREVIEW COLUMN -->
     <div class="preview-col">
-      <div class="preview-head">
-        <h2>Live label</h2>
-        <span id="typeLabel">Custom QR</span>
-      </div>
-
-      <div class="tag-stage">
-        <div class="tag">
-          <div class="eyebrow" id="tagEyebrow">Custom QR</div>
-          <div class="qr-holder" id="qrHolder"></div>
-          <div class="code" id="tagCode">—</div>
-          <div class="ticks" id="ticks"></div>
+      <div class="preview-card">
+        <div class="preview-head">
+          <h2>
+            <span class="show-desktop">Live label</span>
+            <span class="show-mobile preview-title">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l12-7z"/></svg>
+              Physical tag<br>preview
+            </span>
+          </h2>
+          <span id="typeLabel" class="show-desktop">Custom QR</span>
+          <span class="die-cut">2.5″ × 1.5″<br>die-cut</span>
+          <button type="button" class="zoom-btn" id="zoomBtn" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2M11 8v6M8 11h6"/></svg>
+            Zoom
+          </button>
         </div>
+
+        <div class="tag-stage">
+          <div class="stage-scale" aria-hidden="true"><span>0.0 in</span><span>2.5 in</span></div>
+          <div class="tag">
+            <div class="tag-top">
+              <div class="tag-thermal">Racktag thermal</div>
+              <div class="eyebrow" id="tagEyebrow">Custom QR</div>
+            </div>
+            <div class="tag-main">
+              <div class="qr-holder" id="qrHolder"></div>
+              <div class="tag-copy">
+                <div class="encoded-label">Encoded value</div>
+                <div class="code" id="tagCode">—</div>
+                <div class="ticks" id="ticks"></div>
+              </div>
+            </div>
+          </div>
+          <div class="stage-height" aria-hidden="true">1.5 in</div>
+        </div>
+        <div class="status-line" id="statusLine">Ready</div>
       </div>
-      <div class="status-line" id="statusLine">Ready</div>
 
       <!-- BATCH / PRINT SHEET -->
-      <div class="panel">
+      <div class="panel panel-sheet">
         <div class="sheet-head">
-          <h2 style="margin:0;font-size:16px;">Print sheet <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(<span id="sheetCount">0</span> labels)</span></h2>
+          <h2 class="sheet-heading">
+            <svg class="sheet-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V4h10v4"/><path d="M6 17H4v-5h16v5h-2"/><rect x="7" y="13" width="10" height="7"/></svg>
+            <span class="sheet-heading-copy">
+              <span class="show-desktop">Print sheet</span>
+              <span class="show-mobile sheet-name">Print queue</span>
+              <span class="sheet-count">(<span id="sheetCount">0</span> labels)</span>
+            </span>
+          </h2>
           <div class="btn-row" style="margin:0;">
-            <button class="btn secondary" id="clearSheetBtn">Clear</button>
-            <button class="btn" id="printBtn">Print sheet</button>
+            <button class="btn secondary" id="clearSheetBtn" type="button">Clear</button>
+            <button class="btn" id="printBtn" type="button">
+              <svg class="btn-glyph show-mobile" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V4h10v4"/><path d="M6 17H4v-5h16v5h-2"/><rect x="7" y="13" width="10" height="7"/></svg>
+              <span class="show-desktop">Print sheet</span>
+              <span class="show-mobile">Print batch</span>
+            </button>
           </div>
         </div>
         <div class="sheet-grid" id="sheetGrid">
-          <div class="sheet-empty" id="sheetEmpty">No labels added yet. Build one on the left and hit "Add to print sheet."</div>
+          <div class="sheet-empty" id="sheetEmpty">No labels yet. Build one and add it to the print queue.</div>
         </div>
       </div>
     </div>
@@ -1089,7 +1933,7 @@ if(window.caches){
     <span>Cart #</span>
   </button>
   <button type="button" class="app-nav-item" data-tab="cartbin" aria-label="Cart Bin Number">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="3" y="14" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7" fill="currentColor" stroke="none"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v11H4z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/><path d="M4 12h16"/></svg>
     <span>Bin #</span>
   </button>
   <button type="button" class="app-nav-item" data-tab="scan" aria-label="From Barcode Photo">

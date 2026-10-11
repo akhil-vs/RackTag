@@ -27,6 +27,7 @@
   const panels = { bin:'panel-bin', cart:'panel-cart', cartbin:'panel-cartbin', scan:'panel-scan', qr:'panel-qr' };
   const typeLabels = { bin:'Bin location', cart:'Cart number', cartbin:'Cart bin number', scan:'Scanned barcode', qr:'Custom QR' };
   let activeTab = 'qr';
+  let qrAttempted = false;
 
   const ANALYTICS_OPT_KEY = 'racktag_analytics_opt_in';
   const ANALYTICS_SESSION_KEY = 'racktag_analytics_session';
@@ -49,6 +50,11 @@
     if(meta) meta.setAttribute('content', THEME_META_COLORS[resolved]);
     const sel = document.getElementById('themeSelect');
     if(sel && sel.value !== pref) sel.value = pref;
+    const toggle = document.getElementById('themeToggle');
+    if(toggle){
+      toggle.classList.toggle('is-light', resolved === 'light');
+      toggle.setAttribute('aria-label', resolved === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
+    }
   }
 
   function initTheme(){
@@ -256,7 +262,7 @@
     if(activeTab === 'qr'){
       const val = document.getElementById('qr-text').value.trim();
       const ok = val.length > 0;
-      setError('qr-text-field', !ok);
+      setError('qr-text-field', qrAttempted && !ok);
       if(!ok) return null;
       return val;
     }
@@ -290,6 +296,28 @@
   const tagCode = document.getElementById('tagCode');
   const statusLine = document.getElementById('statusLine');
 
+  const PAYLOAD_PRESETS = {
+    url: 'https://racktag.internal/wh2',
+    bin: 'BIN-04-A-12',
+    wifi: 'WIFI:T:WPA;S:RackTag-WH;P:warehouse;;',
+    serial: 'RT-849204-Q'
+  };
+
+  function updateEncoderChrome(code){
+    const qrText = document.getElementById('qr-text');
+    const charCount = document.getElementById('charCount');
+    const liveSync = document.getElementById('liveSync');
+    const clearBtn = document.getElementById('clearPayloadBtn');
+    if(!qrText) return;
+    if(charCount) charCount.textContent = String(qrText.value.length);
+    if(liveSync) liveSync.classList.toggle('on', activeTab === 'qr' && !!code);
+    if(clearBtn) clearBtn.hidden = qrText.value.length === 0;
+    document.querySelectorAll('.preset').forEach(btn=>{
+      const sample = PAYLOAD_PRESETS[btn.dataset.preset];
+      btn.classList.toggle('is-on', sample != null && sample === qrText.value);
+    });
+  }
+
   function refresh(){
     const code = computeCode();
     if(code){
@@ -303,6 +331,7 @@
       statusLine.textContent = 'Fix the highlighted field to generate a label';
       statusLine.classList.remove('ok');
     }
+    updateEncoderChrome(code);
     return code;
   }
 
@@ -805,6 +834,7 @@
   }
 
   document.getElementById('downloadBtn').addEventListener('click', async ()=>{
+    if(activeTab === 'qr') qrAttempted = true;
     const code = refresh();
     if(!code) return;
     if(!(await checkUsageGate('download_png'))) return;
@@ -834,14 +864,30 @@
     }
     sheet.forEach((item, idx)=>{
       const div = document.createElement('div');
-      div.className = 'sheet-item';
+      div.className = 'sheet-item' + (idx === sheet.length - 1 ? ' is-new' : '');
+      const top = document.createElement('div');
+      top.className = 'sheet-chip-top';
+      const index = document.createElement('span');
+      index.className = 'sheet-index';
+      index.textContent = '#' + String(idx + 1).padStart(2, '0');
+      top.appendChild(index);
+      if(idx === sheet.length - 1){
+        const badge = document.createElement('span');
+        badge.className = 'sheet-new';
+        badge.textContent = 'NEW';
+        top.appendChild(badge);
+      }
+      div.appendChild(top);
       const holder = document.createElement('div');
+      holder.className = 'sheet-qr';
       div.appendChild(holder);
       const codeEl = document.createElement('div');
       codeEl.className = 'code';
       codeEl.textContent = item.code;
       const rm = document.createElement('button');
       rm.className = 'remove';
+      rm.type = 'button';
+      rm.setAttribute('aria-label', 'Remove ' + item.code);
       rm.textContent = '×';
       rm.addEventListener('click', ()=>{ sheet.splice(idx,1); renderSheet(); });
       div.appendChild(rm);
@@ -867,6 +913,7 @@
   }
 
   document.getElementById('addToSheetBtn').addEventListener('click', async ()=>{
+    if(activeTab === 'qr') qrAttempted = true;
     const code = refresh();
     if(!code) return;
     if(sheet.some(s=>s.code===code)) return;
@@ -890,6 +937,76 @@
   });
 
   renderSheet();
+
+  function setPayload(value){
+    const qrText = document.getElementById('qr-text');
+    qrText.value = value;
+    qrText.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  document.querySelectorAll('.preset').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const sample = PAYLOAD_PRESETS[btn.dataset.preset];
+      if(sample) setPayload(sample);
+    });
+  });
+
+  const clearPayloadBtn = document.getElementById('clearPayloadBtn');
+  if(clearPayloadBtn){
+    clearPayloadBtn.addEventListener('click', ()=> setPayload(''));
+  }
+
+  function selectGroupValue(id, value){
+    const group = document.getElementById(id);
+    if(!group) return;
+    group.dataset.value = value;
+    group.querySelectorAll('.opt').forEach(o=>{
+      o.classList.toggle('selected', o.textContent === value);
+    });
+  }
+
+  const clearDraftBtn = document.getElementById('clearDraftBtn');
+  if(clearDraftBtn){
+    clearDraftBtn.addEventListener('click', ()=>{
+      if(activeTab === 'qr'){
+        setPayload('');
+        return;
+      }
+      if(activeTab === 'bin'){
+        document.getElementById('bin-xxx').value = '101';
+        document.getElementById('bin-zzzz').value = '1000';
+        selectGroupValue('bin-y', 'A');
+      } else if(activeTab === 'cart'){
+        document.getElementById('cart-xxx').value = '1';
+      } else if(activeTab === 'cartbin'){
+        document.getElementById('cartbin-xxx').value = '1';
+        selectGroupValue('cartbin-y', 'A');
+        selectGroupValue('cartbin-z', '1');
+      } else if(activeTab === 'scan'){
+        document.getElementById('scan-value').value = '';
+      }
+      refresh();
+    });
+  }
+
+  const themeToggle = document.getElementById('themeToggle');
+  if(themeToggle){
+    themeToggle.addEventListener('click', ()=>{
+      const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      const next = current === 'light' ? 'dark' : 'light';
+      applyTheme(next);
+      trackUsage('theme_change', { metadata: { theme: next } });
+    });
+  }
+
+  const zoomBtn = document.getElementById('zoomBtn');
+  const tagStage = document.querySelector('.tag-stage');
+  if(zoomBtn && tagStage){
+    zoomBtn.addEventListener('click', ()=>{
+      const on = tagStage.classList.toggle('is-zoomed');
+      zoomBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
 
   const analyticsOptIn = document.getElementById('analyticsOptIn');
   if(analyticsOptIn){
