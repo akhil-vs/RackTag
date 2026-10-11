@@ -134,32 +134,88 @@
 
       <!-- CART NUMBER -->
       <div class="tab-panel" id="panel-cart" style="display:none;">
-        <div class="template-strip">CRT-MAN1-N</div>
+        <div class="syntax-card">
+          <div class="syntax-head">
+            <span class="syntax-mark" aria-hidden="true"></span>
+            <span class="syntax-title">Cart number encoder</span>
+            <span class="format-badge is-valid" id="cartFormatBadge">
+              <b id="cartFormatTitle">Format valid</b>
+              <span class="format-sub"><i></i><em id="cartFormatSub">Verified</em></span>
+            </span>
+          </div>
+          <div class="syntax-kicker">Constructed syntax payload</div>
+          <div class="syntax-code" id="cartSyntax" aria-live="polite"></div>
+        </div>
+        <div class="template-strip show-desktop">CRT-MAN1-N</div>
 
         <div class="field" id="cart-xxx-field">
-          <label for="cart-xxx">Cart number · 1–999</label>
-          <input type="number" id="cart-xxx" min="1" max="999" value="1">
+          <div class="field-label-row">
+            <label for="cart-xxx">
+              <span class="show-desktop">Cart number (N) · 1–999</span>
+              <span class="show-mobile">Cart number (N) · 1–999</span>
+            </label>
+            <span class="field-meta show-mobile">Fleet ID</span>
+          </div>
+          <div class="stepper">
+            <button type="button" class="step" data-step="-1" data-target="cart-xxx" aria-label="Decrease cart number">−</button>
+            <input type="number" id="cart-xxx" min="1" max="999" value="1">
+            <button type="button" class="step" data-step="1" data-target="cart-xxx" aria-label="Increase cart number">+</button>
+          </div>
           <div class="err-msg">Enter a whole number between 1 and 999.</div>
         </div>
       </div>
 
       <!-- CART BIN NUMBER -->
       <div class="tab-panel" id="panel-cartbin" style="display:none;">
-        <div class="template-strip">CRT-MAN1-N-Y-Z</div>
+        <div class="syntax-card">
+          <div class="syntax-head">
+            <span class="syntax-mark" aria-hidden="true"></span>
+            <span class="syntax-title">Cart bin number encoder</span>
+            <span class="format-badge is-valid" id="cartbinFormatBadge">
+              <b id="cartbinFormatTitle">Format valid</b>
+              <span class="format-sub"><i></i><em id="cartbinFormatSub">Verified</em></span>
+            </span>
+          </div>
+          <div class="syntax-kicker">Constructed syntax payload</div>
+          <div class="syntax-code" id="cartbinSyntax" aria-live="polite"></div>
+        </div>
+        <div class="template-strip show-desktop">CRT-MAN1-N-Y-Z</div>
 
         <div class="field" id="cartbin-xxx-field">
-          <label for="cartbin-xxx">Cart number · 1–999</label>
-          <input type="number" id="cartbin-xxx" min="1" max="999" value="1">
+          <div class="field-label-row">
+            <label for="cartbin-xxx">
+              <span class="show-desktop">Cart number (N) · 1–999</span>
+              <span class="show-mobile">Cart number (N) · 1–999</span>
+            </label>
+            <span class="field-meta show-mobile">Fleet ID</span>
+          </div>
+          <div class="stepper">
+            <button type="button" class="step" data-step="-1" data-target="cartbin-xxx" aria-label="Decrease cart number">−</button>
+            <input type="number" id="cartbin-xxx" min="1" max="999" value="1">
+            <button type="button" class="step" data-step="1" data-target="cartbin-xxx" aria-label="Increase cart number">+</button>
+          </div>
           <div class="err-msg">Enter a whole number between 1 and 999.</div>
         </div>
 
         <div class="field">
-          <label>Level (Y) · A–N</label>
+          <div class="field-label-row">
+            <label>
+              <span class="show-desktop">Level (Y) · A–N</span>
+              <span class="show-mobile">Level (Y) · A–N vertical tier</span>
+            </label>
+            <span class="field-meta show-mobile">Selected: <b id="cartbinTierLabel">Tier A</b></span>
+          </div>
           <div class="btn-group" id="cartbin-y" data-value="A"></div>
         </div>
 
         <div class="field">
-          <label>Bin slot (Z) · 1–6</label>
+          <div class="field-label-row">
+            <label>
+              <span class="show-desktop">Bin slot (Z) · 1–6</span>
+              <span class="show-mobile">Bin slot (Z) · 1–6 position</span>
+            </label>
+            <span class="field-meta show-mobile">Selected: <b id="cartbinSlotLabel">Slot 1</b></span>
+          </div>
           <div class="btn-group" id="cartbin-z" data-value="1"></div>
         </div>
       </div>

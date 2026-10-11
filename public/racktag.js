@@ -220,49 +220,53 @@
     if(Number.isFinite(v)) el.value = String(v);
   }
 
-  function computeCode(){
+  function computeCode(forTab){
+    const tab = forTab || activeTab;
+    const touchErrors = !forTab || forTab === activeTab;
     const templates = getTemplates();
-    if(activeTab === 'bin'){
+    if(tab === 'bin'){
       const xxx = parseInt(document.getElementById('bin-xxx').value, 10);
       const y = document.getElementById('bin-y').dataset.value;
       const zzzz = parseInt(document.getElementById('bin-zzzz').value, 10);
       const v = templates.bin.validation;
       const xxxOk = Number.isInteger(xxx) && xxx >= v.xxx.min && xxx <= v.xxx.max;
       const zzzzOk = Number.isInteger(zzzz) && zzzz >= v.zzzz.min && zzzz <= v.zzzz.max;
-      setError('bin-xxx-field', !xxxOk);
-      setError('bin-zzzz-field', !zzzzOk);
+      if(touchErrors){
+        setError('bin-xxx-field', !xxxOk);
+        setError('bin-zzzz-field', !zzzzOk);
+      }
       if(!xxxOk || !zzzzOk) return null;
       return applyPattern(templates.bin.pattern, { xxx: xxx, y: y, zzzz: zzzz });
     }
-    if(activeTab === 'cart'){
+    if(tab === 'cart'){
       const xxx = parseInt(document.getElementById('cart-xxx').value, 10);
       const v = templates.cart.validation;
       const ok = Number.isInteger(xxx) && xxx >= v.xxx.min && xxx <= v.xxx.max;
-      setError('cart-xxx-field', !ok);
+      if(touchErrors) setError('cart-xxx-field', !ok);
       if(!ok) return null;
       return applyPattern(templates.cart.pattern, { xxx: formatNum(xxx) });
     }
-    if(activeTab === 'cartbin'){
+    if(tab === 'cartbin'){
       const xxx = parseInt(document.getElementById('cartbin-xxx').value, 10);
       const y = document.getElementById('cartbin-y').dataset.value;
       const z = parseInt(document.getElementById('cartbin-z').dataset.value, 10);
       const v = templates.cartbin.validation;
       const xxxOk = Number.isInteger(xxx) && xxx >= v.xxx.min && xxx <= v.xxx.max;
-      setError('cartbin-xxx-field', !xxxOk);
+      if(touchErrors) setError('cartbin-xxx-field', !xxxOk);
       if(!xxxOk) return null;
       return applyPattern(templates.cartbin.pattern, { xxx: formatNum(xxx), y: y, z: formatNum(z) });
     }
-    if(activeTab === 'scan'){
+    if(tab === 'scan'){
       const val = document.getElementById('scan-value').value.trim();
       const ok = val.length > 0;
-      setError('scan-value-field', !ok);
+      if(touchErrors) setError('scan-value-field', !ok);
       if(!ok) return null;
       return val;
     }
-    if(activeTab === 'qr'){
+    if(tab === 'qr'){
       const val = document.getElementById('qr-text').value.trim();
       const ok = val.length > 0;
-      setError('qr-text-field', qrAttempted && !ok);
+      if(touchErrors) setError('qr-text-field', qrAttempted && !ok);
       if(!ok) return null;
       return val;
     }
@@ -321,11 +325,40 @@
       statusLine.classList.remove('ok');
     }
     updateEncoderChrome(code);
-    renderBinSyntax(code);
+    renderBinSyntax();
+    renderCartSyntax();
+    renderCartBinSyntax();
     return code;
   }
 
-  function renderBinSyntax(code){
+  function setFormatBadge(badgeId, titleId, subId, valid){
+    const badge = document.getElementById(badgeId);
+    const title = document.getElementById(titleId);
+    const sub = document.getElementById(subId);
+    if(badge){
+      badge.classList.toggle('is-valid', valid);
+      badge.classList.toggle('is-invalid', !valid);
+    }
+    if(title) title.textContent = valid ? 'Format valid' : 'Format invalid';
+    if(sub) sub.textContent = valid ? 'Verified' : 'Check fields';
+  }
+
+  function appendSyntax(root, parts){
+    root.replaceChildren();
+    parts.forEach(function(part, i){
+      if(i > 0){
+        const node = document.createElement('span');
+        node.className = 'sep';
+        node.textContent = '-';
+        root.appendChild(node);
+      }
+      const node = document.createElement(part.hot ? 'b' : 'span');
+      node.textContent = part.text;
+      root.appendChild(node);
+    });
+  }
+
+  function renderBinSyntax(){
     const root = document.getElementById('binSyntax');
     if(!root) return;
     const yEl = document.getElementById('bin-y');
@@ -334,36 +367,48 @@
     const zzzz = document.getElementById('bin-zzzz') ? document.getElementById('bin-zzzz').value : '';
     const tier = document.getElementById('binTierLabel');
     if(tier) tier.textContent = 'Tier ' + y;
-    root.replaceChildren();
-    function piece(text, hot){
-      const node = document.createElement(hot ? 'b' : 'span');
-      node.textContent = text;
-      root.appendChild(node);
-    }
-    function sep(){
-      const node = document.createElement('span');
-      node.className = 'sep';
-      node.textContent = '-';
-      root.appendChild(node);
-    }
-    piece('P-01');
-    sep();
-    piece('A');
-    sep();
-    piece(xxx || '—', true);
-    sep();
-    piece(y, true);
-    sep();
-    piece(zzzz || '—', true);
-    const badge = document.getElementById('binFormatBadge');
-    const title = document.getElementById('binFormatTitle');
-    const sub = document.getElementById('binFormatSub');
-    if(badge){
-      badge.classList.toggle('is-valid', !!code);
-      badge.classList.toggle('is-invalid', !code);
-    }
-    if(title) title.textContent = code ? 'Format valid' : 'Format invalid';
-    if(sub) sub.textContent = code ? 'Verified' : 'Check fields';
+    appendSyntax(root, [
+      { text: 'P-01', hot: false },
+      { text: 'A', hot: false },
+      { text: xxx || '—', hot: true },
+      { text: y, hot: true },
+      { text: zzzz || '—', hot: true }
+    ]);
+    setFormatBadge('binFormatBadge', 'binFormatTitle', 'binFormatSub', !!computeCode('bin'));
+  }
+
+  function renderCartSyntax(){
+    const root = document.getElementById('cartSyntax');
+    if(!root) return;
+    const xxxEl = document.getElementById('cart-xxx');
+    const xxx = xxxEl ? xxxEl.value : '';
+    appendSyntax(root, [
+      { text: 'CRT-MAN1', hot: false },
+      { text: xxx || '—', hot: true }
+    ]);
+    setFormatBadge('cartFormatBadge', 'cartFormatTitle', 'cartFormatSub', !!computeCode('cart'));
+  }
+
+  function renderCartBinSyntax(){
+    const root = document.getElementById('cartbinSyntax');
+    if(!root) return;
+    const xxxEl = document.getElementById('cartbin-xxx');
+    const yEl = document.getElementById('cartbin-y');
+    const zEl = document.getElementById('cartbin-z');
+    const xxx = xxxEl ? xxxEl.value : '';
+    const y = yEl && yEl.dataset.value ? yEl.dataset.value : 'A';
+    const z = zEl && zEl.dataset.value ? zEl.dataset.value : '1';
+    const tier = document.getElementById('cartbinTierLabel');
+    const slot = document.getElementById('cartbinSlotLabel');
+    if(tier) tier.textContent = 'Tier ' + y;
+    if(slot) slot.textContent = 'Slot ' + z;
+    appendSyntax(root, [
+      { text: 'CRT-MAN1', hot: false },
+      { text: xxx || '—', hot: true },
+      { text: y, hot: true },
+      { text: z, hot: true }
+    ]);
+    setFormatBadge('cartbinFormatBadge', 'cartbinFormatTitle', 'cartbinFormatSub', !!computeCode('cartbin'));
   }
 
   ['cart-xxx', 'cartbin-xxx'].forEach(id=>{
