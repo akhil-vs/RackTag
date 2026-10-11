@@ -725,8 +725,202 @@ if(window.caches){
   .encoded-label,
   .sheet-icon,
   .sheet-chip-top{ display:none; }
-  .syntax-card,
   .step{ display:none; }
+
+  /* Bin / cart encoders — visible at every viewport (not mobile-only) */
+  #panel-bin .syntax-card,
+  #panel-cart .syntax-card,
+  #panel-cartbin .syntax-card{
+    display:block;
+    background:var(--bg-raised);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:12px 14px 14px;
+    margin-bottom:14px;
+  }
+  #panel-bin .syntax-head,
+  #panel-cart .syntax-head,
+  #panel-cartbin .syntax-head{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  #panel-bin .syntax-mark,
+  #panel-cart .syntax-mark,
+  #panel-cartbin .syntax-mark{
+    width:9px;
+    height:9px;
+    margin-top:4px;
+    border-radius:2px;
+    background:#3ddc97;
+    flex:0 0 9px;
+  }
+  #panel-bin .syntax-title,
+  #panel-cart .syntax-title,
+  #panel-cartbin .syntax-title{
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--text);
+    line-height:1.15;
+  }
+  #panel-bin .format-badge,
+  #panel-cart .format-badge,
+  #panel-cartbin .format-badge{
+    margin-left:auto;
+    text-align:right;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    line-height:1.35;
+  }
+  #panel-bin .format-badge b,
+  #panel-cart .format-badge b,
+  #panel-cartbin .format-badge b{ display:block; font-weight:700; }
+  #panel-bin .format-sub,
+  #panel-cart .format-sub,
+  #panel-cartbin .format-sub{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+  }
+  #panel-bin .syntax-kicker,
+  #panel-cart .syntax-kicker,
+  #panel-cartbin .syntax-kicker{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    margin-bottom:8px;
+  }
+  #panel-bin .syntax-code,
+  #panel-cart .syntax-code,
+  #panel-cartbin .syntax-code{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:16px;
+    font-weight:600;
+    letter-spacing:0.02em;
+    color:var(--text);
+    line-height:1.3;
+  }
+  #panel-bin .syntax-code b,
+  #panel-cart .syntax-code b,
+  #panel-cartbin .syntax-code b{ color:var(--yellow); font-weight:700; }
+  #panel-bin .syntax-code .sep,
+  #panel-cart .syntax-code .sep,
+  #panel-cartbin .syntax-code .sep{
+    color:var(--text-dim);
+    margin:0 6px;
+    font-weight:500;
+  }
+  #panel-bin .field,
+  #panel-cart .field,
+  #panel-cartbin .field{ margin-bottom:12px; }
+  #panel-bin .field-label-row label,
+  #panel-cart .field-label-row label,
+  #panel-cartbin .field-label-row label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    font-weight:500;
+    letter-spacing:0.06em;
+    color:var(--text-muted);
+    margin-bottom:0;
+  }
+  #panel-bin .stepper,
+  #panel-cart .stepper,
+  #panel-cartbin .stepper{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:4px;
+  }
+  #panel-bin .stepper input,
+  #panel-cart .stepper input,
+  #panel-cartbin .stepper input{
+    flex:1;
+    width:auto;
+    border:none;
+    background:transparent;
+    padding:4px 0 8px;
+    font-size:28px;
+    font-weight:600;
+    line-height:1;
+    color:var(--text);
+    outline:none;
+  }
+  #panel-bin .step,
+  #panel-cart .step,
+  #panel-cartbin .step{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--bg-input);
+    color:var(--text);
+    font-size:20px;
+    line-height:1;
+    cursor:pointer;
+    flex:0 0 36px;
+  }
+  #bin-y,
+  #cartbin-y{
+    display:grid;
+    grid-template-columns:repeat(8, minmax(0, 1fr));
+    gap:6px;
+  }
+  #cartbin-z{
+    display:grid;
+    grid-template-columns:repeat(6, minmax(0, 1fr));
+    gap:6px;
+  }
+  #bin-y .opt,
+  #cartbin-y .opt,
+  #cartbin-z .opt{
+    min-width:0;
+    aspect-ratio:1;
+    border-radius:8px;
+    padding:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--bg-input);
+    border-color:var(--border);
+    font-size:13px;
+  }
+  [data-theme="light"] #panel-bin .syntax-card,
+  [data-theme="light"] #panel-cart .syntax-card,
+  [data-theme="light"] #panel-cartbin .syntax-card{
+    background:#fff;
+    border-color:#D9D3C4;
+  }
+  [data-theme="light"] #panel-bin .syntax-title,
+  [data-theme="light"] #panel-cart .syntax-title,
+  [data-theme="light"] #panel-cartbin .syntax-title,
+  [data-theme="light"] #panel-bin .syntax-code,
+  [data-theme="light"] #panel-cart .syntax-code,
+  [data-theme="light"] #panel-cartbin .syntax-code,
+  [data-theme="light"] #panel-bin .stepper input,
+  [data-theme="light"] #panel-cart .stepper input,
+  [data-theme="light"] #panel-cartbin .stepper input{ color:#1E1E1E; }
+  [data-theme="light"] #panel-bin .step,
+  [data-theme="light"] #panel-cart .step,
+  [data-theme="light"] #panel-cartbin .step,
+  [data-theme="light"] #bin-y .opt,
+  [data-theme="light"] #cartbin-y .opt,
+  [data-theme="light"] #cartbin-z .opt{
+    background:#F7F4EC;
+    border-color:#C9C3B2;
+    color:#1E1E1E;
+  }
+
   .stepper input{
     width:100%;
     -moz-appearance:textfield;
@@ -2208,7 +2402,7 @@ if(window.caches){
   </button>
 </nav>
 
-<script src="/racktag.js"></script>
+<script src="/racktag.js?v=2"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
