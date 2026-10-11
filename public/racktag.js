@@ -328,6 +328,7 @@
     renderBinSyntax();
     renderCartSyntax();
     renderCartBinSyntax();
+    renderScanSyntax();
     return code;
   }
 
@@ -387,6 +388,23 @@
       { text: xxx || '—', hot: true }
     ]);
     setFormatBadge('cartFormatBadge', 'cartFormatTitle', 'cartFormatSub', !!computeCode('cart'));
+  }
+
+  function renderScanSyntax(){
+    const root = document.getElementById('scanSyntax');
+    if(!root) return;
+    const valEl = document.getElementById('scan-value');
+    const val = valEl ? valEl.value.trim() : '';
+    const modeLabel = document.getElementById('scanModeLabel');
+    if(modeLabel){
+      const mode = typeof getScanMode === 'function' ? getScanMode() : 'barcode';
+      modeLabel.textContent = mode === 'text' ? 'Read text' : 'Barcode';
+    }
+    root.replaceChildren();
+    const node = document.createElement('b');
+    node.textContent = val || '—';
+    root.appendChild(node);
+    setFormatBadge('scanFormatBadge', 'scanFormatTitle', 'scanFormatSub', !!computeCode('scan'));
   }
 
   function renderCartBinSyntax(){
@@ -457,6 +475,7 @@
       scanModeGroup.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
       opt.classList.add('selected');
       scanModeHint.textContent = scanModeHints[opt.dataset.v];
+      refresh();
     });
   });
 
@@ -467,6 +486,14 @@
   function setScanStatus(text, cls){
     scanStatus.textContent = text;
     scanStatus.className = 'scan-status' + (cls ? ' ' + cls : '');
+    const meta = document.getElementById('scanCameraMeta');
+    if(meta){
+      if(scanStream || zxReader) meta.textContent = 'Live';
+      else if(cls === 'success') meta.textContent = 'Captured';
+      else if(cls === 'loading') meta.textContent = 'Scanning';
+      else if(cls === 'fail') meta.textContent = 'Error';
+      else meta.textContent = 'Idle';
+    }
   }
 
   function parseScanCodes(text){

@@ -355,9 +355,19 @@ if(window.caches){
     color:var(--yellow);
   }
   .btn-group .opt.selected{
-    background:var(--yellow);
+    background:var(--bg-input);
     border-color:var(--yellow);
-    color:var(--on-yellow);
+    color:var(--text);
+    box-shadow:0 0 0 2px var(--yellow);
+    z-index:1;
+  }
+  #bin-y .opt.selected,
+  #cartbin-y .opt.selected,
+  #cartbin-z .opt.selected{
+    background:var(--bg-input);
+    border-color:var(--yellow);
+    color:var(--text);
+    box-shadow:0 0 0 2px var(--yellow);
   }
 
   .field input[type=file]{
@@ -492,9 +502,81 @@ if(window.caches){
     border-color:var(--yellow);
   }
   .scan-picker-list .pick.selected{
-    background:var(--yellow);
+    background:var(--bg-input);
     border-color:var(--yellow);
-    color:var(--on-yellow);
+    color:var(--text);
+    box-shadow:0 0 0 2px var(--yellow);
+  }
+  #scan-mode{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:6px;
+  }
+  #scan-mode .opt{
+    min-width:0;
+    border-radius:8px;
+    padding:12px 10px;
+  }
+  #panel-scan .scan-camera-row{
+    display:flex;
+    flex-direction:row;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:4px;
+  }
+  #panel-scan .scan-camera-row .btn{
+    flex:1 1 8rem;
+    min-width:0;
+    min-height:44px;
+    border-radius:12px;
+  }
+  #panel-scan #scan-value{
+    width:100%;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:var(--bg-input);
+    padding:13px 14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:16px;
+    line-height:1.35;
+    color:var(--text);
+  }
+  #panel-scan #scan-value:focus{
+    outline:2px solid var(--yellow);
+    outline-offset:1px;
+  }
+  #panel-scan .field.error #scan-value{
+    border-color:var(--error);
+  }
+  #panel-scan .scan-hint{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.04em;
+    color:var(--text-muted);
+    margin-top:8px;
+    line-height:1.45;
+  }
+  #panel-scan .scan-status{
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:var(--bg-raised);
+  }
+  #panel-scan #scan-video-wrap{
+    border-radius:16px;
+    border:1px solid var(--border);
+  }
+  #panel-scan .scan-picker label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    font-weight:500;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+  }
+  [data-theme="light"] #panel-scan #scan-value{
+    background:#F7F4EC;
+    border-color:#C9C3B2;
+    color:#1E1E1E;
   }
 
   .template-strip{
@@ -740,7 +822,7 @@ if(window.caches){
   /* Bin / cart encoders — visible at every viewport (not mobile-only) */
   #panel-bin .syntax-card,
   #panel-cart .syntax-card,
-  #panel-cartbin .syntax-card{
+  #panel-cartbin .syntax-card, #panel-scan .syntax-card{
     display:block;
     background:var(--bg-raised);
     border:1px solid var(--border);
@@ -750,7 +832,7 @@ if(window.caches){
   }
   #panel-bin .syntax-head,
   #panel-cart .syntax-head,
-  #panel-cartbin .syntax-head{
+  #panel-cartbin .syntax-head, #panel-scan .syntax-head{
     display:flex;
     align-items:flex-start;
     gap:8px;
@@ -758,7 +840,7 @@ if(window.caches){
   }
   #panel-bin .syntax-mark,
   #panel-cart .syntax-mark,
-  #panel-cartbin .syntax-mark{
+  #panel-cartbin .syntax-mark, #panel-scan .syntax-mark{
     width:9px;
     height:9px;
     margin-top:4px;
@@ -768,7 +850,7 @@ if(window.caches){
   }
   #panel-bin .syntax-title,
   #panel-cart .syntax-title,
-  #panel-cartbin .syntax-title{
+  #panel-cartbin .syntax-title, #panel-scan .syntax-title{
     font-family:'Oswald', sans-serif;
     font-weight:600;
     font-size:13px;
@@ -779,7 +861,7 @@ if(window.caches){
   }
   #panel-bin .format-badge,
   #panel-cart .format-badge,
-  #panel-cartbin .format-badge{
+  #panel-cartbin .format-badge, #panel-scan .format-badge{
     margin-left:auto;
     text-align:right;
     font-family:'IBM Plex Mono', monospace;
@@ -790,17 +872,17 @@ if(window.caches){
   }
   #panel-bin .format-badge b,
   #panel-cart .format-badge b,
-  #panel-cartbin .format-badge b{ display:block; font-weight:700; }
+  #panel-cartbin .format-badge b, #panel-scan .format-badge b{ display:block; font-weight:700; }
   #panel-bin .format-sub,
   #panel-cart .format-sub,
-  #panel-cartbin .format-sub{
+  #panel-cartbin .format-sub, #panel-scan .format-sub{
     display:inline-flex;
     align-items:center;
     gap:4px;
   }
   #panel-bin .syntax-kicker,
   #panel-cart .syntax-kicker,
-  #panel-cartbin .syntax-kicker{
+  #panel-cartbin .syntax-kicker, #panel-scan .syntax-kicker{
     font-family:'IBM Plex Mono', monospace;
     font-size:10px;
     letter-spacing:0.1em;
@@ -810,7 +892,7 @@ if(window.caches){
   }
   #panel-bin .syntax-code,
   #panel-cart .syntax-code,
-  #panel-cartbin .syntax-code{
+  #panel-cartbin .syntax-code, #panel-scan .syntax-code{
     font-family:'IBM Plex Mono', monospace;
     font-size:16px;
     font-weight:600;
@@ -820,20 +902,20 @@ if(window.caches){
   }
   #panel-bin .syntax-code b,
   #panel-cart .syntax-code b,
-  #panel-cartbin .syntax-code b{ color:var(--yellow); font-weight:700; }
+  #panel-cartbin .syntax-code b, #panel-scan .syntax-code b{ color:var(--yellow); font-weight:700; }
   #panel-bin .syntax-code .sep,
   #panel-cart .syntax-code .sep,
-  #panel-cartbin .syntax-code .sep{
+  #panel-cartbin .syntax-code .sep, #panel-scan .syntax-code .sep{
     color:var(--text-dim);
     margin:0 6px;
     font-weight:500;
   }
   #panel-bin .field,
   #panel-cart .field,
-  #panel-cartbin .field{ margin-bottom:12px; }
+  #panel-cartbin .field, #panel-scan .field{ margin-bottom:12px; }
   #panel-bin .field-label-row label,
   #panel-cart .field-label-row label,
-  #panel-cartbin .field-label-row label{
+  #panel-cartbin .field-label-row label, #panel-scan .field-label-row label{
     font-family:'IBM Plex Mono', monospace;
     font-size:10px;
     font-weight:500;
@@ -843,7 +925,7 @@ if(window.caches){
   }
   #panel-bin .stepper,
   #panel-cart .stepper,
-  #panel-cartbin .stepper{
+  #panel-cartbin .stepper, #panel-scan .stepper{
     display:flex;
     align-items:center;
     gap:8px;
@@ -851,7 +933,7 @@ if(window.caches){
   }
   #panel-bin .stepper input,
   #panel-cart .stepper input,
-  #panel-cartbin .stepper input{
+  #panel-cartbin .stepper input, #panel-scan .stepper input{
     flex:1;
     width:auto;
     border:none;
@@ -865,7 +947,7 @@ if(window.caches){
   }
   #panel-bin .step,
   #panel-cart .step,
-  #panel-cartbin .step{
+  #panel-cartbin .step, #panel-scan .step{
     display:flex;
     align-items:center;
     justify-content:center;
@@ -903,32 +985,55 @@ if(window.caches){
     justify-content:center;
     background:var(--bg-input);
     border-color:var(--border);
+    color:var(--text);
     font-size:13px;
+  }
+  #bin-y .opt.selected,
+  #cartbin-y .opt.selected,
+  #cartbin-z .opt.selected{
+    background:var(--bg-input);
+    color:var(--text);
+    border-color:var(--yellow);
+    box-shadow:0 0 0 2px var(--yellow);
   }
   [data-theme="light"] #panel-bin .syntax-card,
   [data-theme="light"] #panel-cart .syntax-card,
-  [data-theme="light"] #panel-cartbin .syntax-card{
+  [data-theme="light"] #panel-cartbin .syntax-card,
+  [data-theme="light"] #panel-scan .syntax-card{
     background:#fff;
     border-color:#D9D3C4;
   }
   [data-theme="light"] #panel-bin .syntax-title,
   [data-theme="light"] #panel-cart .syntax-title,
   [data-theme="light"] #panel-cartbin .syntax-title,
+  [data-theme="light"] #panel-scan .syntax-title,
   [data-theme="light"] #panel-bin .syntax-code,
   [data-theme="light"] #panel-cart .syntax-code,
   [data-theme="light"] #panel-cartbin .syntax-code,
+  [data-theme="light"] #panel-scan .syntax-code,
   [data-theme="light"] #panel-bin .stepper input,
   [data-theme="light"] #panel-cart .stepper input,
-  [data-theme="light"] #panel-cartbin .stepper input{ color:#1E1E1E; }
+  [data-theme="light"] #panel-cartbin .stepper input,
+  [data-theme="light"] #panel-scan .stepper input{ color:#1E1E1E; }
   [data-theme="light"] #panel-bin .step,
   [data-theme="light"] #panel-cart .step,
   [data-theme="light"] #panel-cartbin .step,
+  [data-theme="light"] #panel-scan .step,
   [data-theme="light"] #bin-y .opt,
   [data-theme="light"] #cartbin-y .opt,
   [data-theme="light"] #cartbin-z .opt{
     background:#F7F4EC;
     border-color:#C9C3B2;
     color:#1E1E1E;
+  }
+  [data-theme="light"] #bin-y .opt.selected,
+  [data-theme="light"] #cartbin-y .opt.selected,
+  [data-theme="light"] #cartbin-z .opt.selected,
+  [data-theme="light"] .btn-group .opt.selected{
+    background:#F7F4EC;
+    color:#1E1E1E;
+    border-color:var(--yellow);
+    box-shadow:0 0 0 2px var(--yellow);
   }
 
   .stepper input{
@@ -1239,8 +1344,7 @@ if(window.caches){
       padding:0;
       box-shadow:none;
     }
-    #panel-qr,
-    #panel-scan{
+    #panel-qr{
       background:#14171e;
       border:1px solid #2a2e38;
       border-radius:18px;
@@ -1295,7 +1399,8 @@ if(window.caches){
     }
     #binFormatSub,
     #cartFormatSub,
-    #cartbinFormatSub{ font-style:normal; }
+    #cartbinFormatSub,
+    #scanFormatSub{ font-style:normal; }
     .format-sub i{
       width:6px;
       height:6px;
@@ -1324,7 +1429,7 @@ if(window.caches){
     }
     #panel-bin .field,
     #panel-cart .field,
-    #panel-cartbin .field{ margin-bottom:12px; }
+    #panel-cartbin .field, #panel-scan .field{ margin-bottom:12px; }
     .syntax-code b{ color:var(--yellow); font-weight:700; }
     .syntax-code .sep{
       color:#5c6370;
@@ -1333,7 +1438,7 @@ if(window.caches){
     }
     #panel-bin .field-label-row label,
     #panel-cart .field-label-row label,
-    #panel-cartbin .field-label-row label{
+    #panel-cartbin .field-label-row label, #panel-scan .field-label-row label{
       font-family:'IBM Plex Mono', monospace;
       font-size:10px;
       font-weight:500;
@@ -1352,7 +1457,7 @@ if(window.caches){
     .field-meta b{ color:var(--yellow); font-weight:700; }
     #panel-bin .stepper,
     #panel-cart .stepper,
-    #panel-cartbin .stepper{
+    #panel-cartbin .stepper, #panel-scan .stepper{
       display:flex;
       align-items:center;
       gap:8px;
@@ -1360,7 +1465,7 @@ if(window.caches){
     }
     #panel-bin .stepper input,
     #panel-cart .stepper input,
-    #panel-cartbin .stepper input{
+    #panel-cartbin .stepper input, #panel-scan .stepper input{
       flex:1;
       width:auto;
       border:none;
@@ -1374,10 +1479,10 @@ if(window.caches){
     }
     #panel-bin .stepper input:focus,
     #panel-cart .stepper input:focus,
-    #panel-cartbin .stepper input:focus{ outline:none; }
+    #panel-cartbin .stepper input:focus, #panel-scan .stepper input:focus{ outline:none; }
     #panel-bin .step,
     #panel-cart .step,
-    #panel-cartbin .step{
+    #panel-cartbin .step, #panel-scan .step{
       display:flex;
       align-items:center;
       justify-content:center;
@@ -1415,7 +1520,16 @@ if(window.caches){
       justify-content:center;
       background:#10131a;
       border-color:#2e3440;
+      color:var(--text);
       font-size:13px;
+    }
+    #bin-y .opt.selected,
+    #cartbin-y .opt.selected,
+    #cartbin-z .opt.selected{
+      background:#10131a;
+      color:var(--text);
+      border-color:var(--yellow);
+      box-shadow:0 0 0 2px var(--yellow);
     }
     .preview-col{ gap:12px; }
 
@@ -1941,7 +2055,6 @@ if(window.caches){
       box-shadow:none;
     }
     [data-theme="light"] #panel-qr,
-    [data-theme="light"] #panel-scan,
     [data-theme="light"] .syntax-card{
       background:#fff;
       border-color:#D9D3C4;
@@ -1950,16 +2063,27 @@ if(window.caches){
     [data-theme="light"] .syntax-code,
     [data-theme="light"] #panel-bin .stepper input,
     [data-theme="light"] #panel-cart .stepper input,
-    [data-theme="light"] #panel-cartbin .stepper input{ color:#1E1E1E; }
+    [data-theme="light"] #panel-cartbin .stepper input,
+    [data-theme="light"] #panel-scan .stepper input{ color:#1E1E1E; }
     [data-theme="light"] #panel-bin .step,
     [data-theme="light"] #panel-cart .step,
     [data-theme="light"] #panel-cartbin .step,
+    [data-theme="light"] #panel-scan .step,
     [data-theme="light"] #bin-y .opt,
     [data-theme="light"] #cartbin-y .opt,
     [data-theme="light"] #cartbin-z .opt{
       background:#F7F4EC;
       border-color:#C9C3B2;
       color:#1E1E1E;
+    }
+    [data-theme="light"] #bin-y .opt.selected,
+    [data-theme="light"] #cartbin-y .opt.selected,
+    [data-theme="light"] #cartbin-z .opt.selected,
+    [data-theme="light"] .btn-group .opt.selected{
+      background:#F7F4EC;
+      color:#1E1E1E;
+      border-color:var(--yellow);
+      box-shadow:0 0 0 2px var(--yellow);
     }
     [data-theme="light"] #qr-text{
       background:#F7F4EC;
@@ -2262,20 +2386,44 @@ if(window.caches){
 
       <!-- SCAN BARCODE PHOTO -->
       <div class="tab-panel" id="panel-scan" style="display:none;">
-        <div class="template-strip">Decoded from camera</div>
+        <div class="syntax-card">
+          <div class="syntax-head">
+            <span class="syntax-mark" aria-hidden="true"></span>
+            <span class="syntax-title">Barcode scan encoder</span>
+            <span class="format-badge is-valid" id="scanFormatBadge">
+              <b id="scanFormatTitle">Format valid</b>
+              <span class="format-sub"><i></i><em id="scanFormatSub">Verified</em></span>
+            </span>
+          </div>
+          <div class="syntax-kicker">Decoded payload</div>
+          <div class="syntax-code" id="scanSyntax" aria-live="polite"></div>
+        </div>
+        <div class="template-strip show-desktop">Decoded from camera</div>
 
         <div class="field">
-          <label>Scan mode</label>
+          <div class="field-label-row">
+            <label>
+              <span class="show-desktop">Scan mode</span>
+              <span class="show-mobile">Scan mode · capture type</span>
+            </label>
+            <span class="field-meta show-mobile">Selected: <b id="scanModeLabel">Barcode</b></span>
+          </div>
           <div class="btn-group" id="scan-mode" data-value="barcode">
             <div class="opt selected" data-v="barcode">Barcode</div>
             <div class="opt" data-v="text">Read text</div>
           </div>
-          <div class="hint" id="scan-mode-hint">Barcode mode — point at a barcode and hold steady.</div>
+          <div class="hint scan-hint" id="scan-mode-hint">Barcode mode — point at a barcode and hold steady.</div>
         </div>
 
         <div class="field">
-          <label>Camera</label>
-          <div class="btn-row" style="margin-top:0;">
+          <div class="field-label-row">
+            <label>
+              <span class="show-desktop">Camera</span>
+              <span class="show-mobile">Camera · live capture</span>
+            </label>
+            <span class="field-meta show-mobile" id="scanCameraMeta">Idle</span>
+          </div>
+          <div class="btn-row scan-camera-row">
             <button class="btn accent" id="scanStartBtn" type="button">Start camera</button>
             <button class="btn secondary" id="scanStopBtn" type="button" disabled>Stop camera</button>
             <button class="btn accent" id="scanCaptureBtn" type="button" style="display:none;">Scan words</button>
@@ -2296,7 +2444,12 @@ if(window.caches){
         </div>
 
         <div class="field" id="scan-value-field">
-          <label for="scan-value">Scanned value</label>
+          <div class="field-label-row">
+            <label for="scan-value">
+              <span class="show-desktop">Scanned value</span>
+              <span class="show-mobile">Scanned value · editable</span>
+            </label>
+          </div>
           <input type="text" id="scan-value" placeholder="Decoded value appears here — or type it manually">
           <div class="err-msg">Enter or scan a value.</div>
         </div>
