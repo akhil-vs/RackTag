@@ -296,13 +296,6 @@
   const tagCode = document.getElementById('tagCode');
   const statusLine = document.getElementById('statusLine');
 
-  const PAYLOAD_PRESETS = {
-    url: 'https://racktag.internal/wh2',
-    bin: 'BIN-04-A-12',
-    wifi: 'WIFI:T:WPA;S:RackTag-WH;P:warehouse;;',
-    serial: 'RT-849204-Q'
-  };
-
   function updateEncoderChrome(code){
     const qrText = document.getElementById('qr-text');
     const charCount = document.getElementById('charCount');
@@ -312,10 +305,6 @@
     if(charCount) charCount.textContent = String(qrText.value.length);
     if(liveSync) liveSync.classList.toggle('on', activeTab === 'qr' && !!code);
     if(clearBtn) clearBtn.hidden = qrText.value.length === 0;
-    document.querySelectorAll('.preset').forEach(btn=>{
-      const sample = PAYLOAD_PRESETS[btn.dataset.preset];
-      btn.classList.toggle('is-on', sample != null && sample === qrText.value);
-    });
   }
 
   function refresh(){
@@ -985,13 +974,6 @@
     qrText.value = value;
     qrText.dispatchEvent(new Event('input', { bubbles: true }));
   }
-
-  document.querySelectorAll('.preset').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const sample = PAYLOAD_PRESETS[btn.dataset.preset];
-      if(sample) setPayload(sample);
-    });
-  });
 
   const clearPayloadBtn = document.getElementById('clearPayloadBtn');
   if(clearPayloadBtn){
