@@ -225,16 +225,16 @@
         <div class="syntax-card">
           <div class="syntax-head">
             <span class="syntax-mark" aria-hidden="true"></span>
-            <span class="syntax-title">Barcode scan encoder</span>
+            <span class="syntax-title" id="scanSyntaxTitle">Barcode scan encoder</span>
             <span class="format-badge is-valid" id="scanFormatBadge">
               <b id="scanFormatTitle">Format valid</b>
               <span class="format-sub"><i></i><em id="scanFormatSub">Verified</em></span>
             </span>
           </div>
-          <div class="syntax-kicker">Decoded payload</div>
+          <div class="syntax-kicker" id="scanSyntaxKicker">Decoded payload</div>
           <div class="syntax-code" id="scanSyntax" aria-live="polite"></div>
         </div>
-        <div class="template-strip show-desktop">Decoded from camera</div>
+        <div class="template-strip show-desktop" id="scanTemplateStrip">Decoded from camera</div>
 
         <div class="field">
           <div class="field-label-row">
@@ -247,36 +247,45 @@
           <div class="btn-group" id="scan-mode" data-value="barcode">
             <div class="opt selected" data-v="barcode">Barcode</div>
             <div class="opt" data-v="text">Read text</div>
+            <div class="opt" data-v="pack">Pack QR</div>
           </div>
           <div class="hint scan-hint" id="scan-mode-hint">Barcode mode — point at a barcode and hold steady.</div>
         </div>
 
-        <div class="field">
-          <div class="field-label-row">
-            <label>
-              <span class="show-desktop">Camera</span>
-              <span class="show-mobile">Camera · live capture</span>
-            </label>
-            <span class="field-meta show-mobile" id="scanCameraMeta">Idle</span>
+        <div id="scan-camera-block">
+          <div class="field">
+            <div class="field-label-row">
+              <label>
+                <span class="show-desktop">Camera</span>
+                <span class="show-mobile">Camera · live capture</span>
+              </label>
+              <span class="field-meta show-mobile" id="scanCameraMeta">Idle</span>
+            </div>
+            <div class="btn-row scan-camera-row">
+              <button class="btn accent" id="scanStartBtn" type="button">Start camera</button>
+              <button class="btn secondary" id="scanStopBtn" type="button" disabled>Stop camera</button>
+              <button class="btn accent" id="scanCaptureBtn" type="button" style="display:none;">Scan words</button>
+            </div>
           </div>
-          <div class="btn-row scan-camera-row">
-            <button class="btn accent" id="scanStartBtn" type="button">Start camera</button>
-            <button class="btn secondary" id="scanStopBtn" type="button" disabled>Stop camera</button>
-            <button class="btn accent" id="scanCaptureBtn" type="button" style="display:none;">Scan words</button>
+
+          <div id="scan-video-wrap" style="display:none;">
+            <video id="scan-video" playsinline muted></video>
+            <div id="scan-word-layer"></div>
+            <div class="scan-reticle" id="scan-reticle"></div>
+          </div>
+
+          <div id="scan-status" class="scan-status">Camera is off.</div>
+
+          <div id="scan-picker" class="scan-picker" style="display:none;">
+            <label>Multiple codes detected — choose one</label>
+            <div id="scan-picker-list" class="scan-picker-list"></div>
           </div>
         </div>
 
-        <div id="scan-video-wrap" style="display:none;">
-          <video id="scan-video" playsinline muted></video>
-          <div id="scan-word-layer"></div>
-          <div class="scan-reticle" id="scan-reticle"></div>
-        </div>
-
-        <div id="scan-status" class="scan-status">Camera is off.</div>
-
-        <div id="scan-picker" class="scan-picker" style="display:none;">
-          <label>Multiple codes detected — choose one</label>
-          <div id="scan-picker-list" class="scan-picker-list"></div>
+        <div id="pack-station-card" class="pack-station-card" hidden>
+          <div class="pack-station-kicker">Pack station QR</div>
+          <div id="packStationQr" class="pack-station-qr"></div>
+          <div class="pack-station-code">MAN1-FC-PACK-1</div>
         </div>
 
         <div class="field" id="scan-value-field">

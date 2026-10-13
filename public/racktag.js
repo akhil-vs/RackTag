@@ -411,6 +411,14 @@
     setFormatBadge('cartFormatBadge', 'cartFormatTitle', 'cartFormatSub', !!computeCode('cart'));
   }
 
+  const PACK_STATION_QR = 'MAN1-FC-PACK-1';
+
+  const scanModeLabels = {
+    barcode: 'Barcode',
+    text: 'Read text',
+    pack: 'Pack QR'
+  };
+
   function renderScanSyntax(){
     const root = document.getElementById('scanSyntax');
     if(!root) return;
@@ -420,7 +428,8 @@
     if(modeLabel){
       const modeEl = document.getElementById('scan-mode');
       const mode = modeEl && modeEl.dataset.value ? modeEl.dataset.value : 'barcode';
-      modeLabel.textContent = mode === 'text' ? 'Read text' : 'Barcode';
+      modeLabel.textContent = scanModeLabels[mode] || 'Barcode';
+      updateScanChrome(mode);
     }
     root.replaceChildren();
     const node = document.createElement('b');
@@ -485,17 +494,58 @@
 
   const scanModeHints = {
     barcode: 'Barcode mode — point at a barcode and hold steady. Works with UPC, EAN, Code 128, Code 39 and similar formats.',
-    text: 'Read text mode — fill the frame with the text on screen, hold steady, then tap Scan words. For phone/computer screens, reduce glare and use max brightness.'
+    text: 'Read text mode — fill the frame with the text on screen, hold steady, then tap Scan words. For phone/computer screens, reduce glare and use max brightness.',
+    pack: 'Shows the static pack station QR for MAN1-FC-PACK-1. Hold the screen up to scan it, or add the label to the print sheet.'
   };
+
+  function updateScanChrome(mode){
+    const title = document.getElementById('scanSyntaxTitle');
+    const kicker = document.getElementById('scanSyntaxKicker');
+    const strip = document.getElementById('scanTemplateStrip');
+    if(mode === 'pack'){
+      if(title) title.textContent = 'Pack station QR';
+      if(kicker) kicker.textContent = 'Static code';
+      if(strip) strip.textContent = PACK_STATION_QR;
+    } else {
+      if(title) title.textContent = 'Barcode scan encoder';
+      if(kicker) kicker.textContent = 'Decoded payload';
+      if(strip) strip.textContent = 'Decoded from camera';
+    }
+  }
+
+  function renderPackStationQr(){
+    const holder = document.getElementById('packStationQr');
+    if(!holder) return;
+    renderQR(holder, PACK_STATION_QR, 180);
+  }
+
+  function applyScanMode(mode){
+    if(scanStream || zxReader) stopCamera();
+    hideScanPicker();
+    clearWordBoxes();
+    scanModeGroup.dataset.value = mode;
+    scanModeGroup.querySelectorAll('.opt').forEach(o=>{
+      o.classList.toggle('selected', o.dataset.v === mode);
+    });
+    if(scanModeHint) scanModeHint.textContent = scanModeHints[mode] || scanModeHints.barcode;
+    const pack = mode === 'pack';
+    const cameraBlock = document.getElementById('scan-camera-block');
+    const packCard = document.getElementById('pack-station-card');
+    if(cameraBlock) cameraBlock.hidden = pack;
+    if(packCard) packCard.hidden = !pack;
+    if(scanValue){
+      scanValue.readOnly = pack;
+      if(pack) scanValue.value = PACK_STATION_QR;
+      else if(scanValue.value.trim() === PACK_STATION_QR) scanValue.value = '';
+    }
+    if(pack) renderPackStationQr();
+    else setScanStatus('Camera is off.');
+    refresh();
+  }
 
   scanModeGroup.querySelectorAll('.opt').forEach(opt=>{
     opt.addEventListener('click', ()=>{
-      if(scanStream || zxReader) stopCamera();
-      scanModeGroup.dataset.value = opt.dataset.v;
-      scanModeGroup.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
-      opt.classList.add('selected');
-      scanModeHint.textContent = scanModeHints[opt.dataset.v];
-      refresh();
+      applyScanMode(opt.dataset.v);
     });
   });
 

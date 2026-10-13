@@ -509,13 +509,15 @@ if(window.caches){
   }
   #scan-mode{
     display:grid;
-    grid-template-columns:repeat(2, minmax(0, 1fr));
+    grid-template-columns:repeat(3, minmax(0, 1fr));
     gap:6px;
   }
   #scan-mode .opt{
     min-width:0;
     border-radius:8px;
-    padding:12px 10px;
+    padding:12px 6px;
+    font-size:12px;
+    line-height:1.2;
   }
   #panel-scan .scan-camera-row{
     display:flex;
@@ -547,6 +549,48 @@ if(window.caches){
   }
   #panel-scan .field.error #scan-value{
     border-color:var(--error);
+  }
+  #scan-camera-block[hidden],
+  #pack-station-card[hidden]{
+    display:none !important;
+  }
+  .pack-station-card{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    margin-top:8px;
+    padding:16px 12px 14px;
+    border:1px solid var(--border);
+    border-radius:16px;
+    background:var(--bg-raised);
+  }
+  .pack-station-kicker{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    font-weight:500;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+  }
+  .pack-station-qr{
+    background:#fff;
+    padding:10px;
+    border-radius:8px;
+    line-height:0;
+  }
+  .pack-station-qr canvas,
+  .pack-station-qr img{
+    display:block;
+    width:180px;
+    height:180px;
+  }
+  .pack-station-code{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    font-size:16px;
+    letter-spacing:0.04em;
+    color:var(--text);
   }
   #panel-scan .scan-hint{
     font-family:'IBM Plex Mono', monospace;
@@ -2410,16 +2454,16 @@ if(window.caches){
         <div class="syntax-card">
           <div class="syntax-head">
             <span class="syntax-mark" aria-hidden="true"></span>
-            <span class="syntax-title">Barcode scan encoder</span>
+            <span class="syntax-title" id="scanSyntaxTitle">Barcode scan encoder</span>
             <span class="format-badge is-valid" id="scanFormatBadge">
               <b id="scanFormatTitle">Format valid</b>
               <span class="format-sub"><i></i><em id="scanFormatSub">Verified</em></span>
             </span>
           </div>
-          <div class="syntax-kicker">Decoded payload</div>
+          <div class="syntax-kicker" id="scanSyntaxKicker">Decoded payload</div>
           <div class="syntax-code" id="scanSyntax" aria-live="polite"></div>
         </div>
-        <div class="template-strip show-desktop">Decoded from camera</div>
+        <div class="template-strip show-desktop" id="scanTemplateStrip">Decoded from camera</div>
 
         <div class="field">
           <div class="field-label-row">
@@ -2432,36 +2476,45 @@ if(window.caches){
           <div class="btn-group" id="scan-mode" data-value="barcode">
             <div class="opt selected" data-v="barcode">Barcode</div>
             <div class="opt" data-v="text">Read text</div>
+            <div class="opt" data-v="pack">Pack QR</div>
           </div>
           <div class="hint scan-hint" id="scan-mode-hint">Barcode mode — point at a barcode and hold steady.</div>
         </div>
 
-        <div class="field">
-          <div class="field-label-row">
-            <label>
-              <span class="show-desktop">Camera</span>
-              <span class="show-mobile">Camera · live capture</span>
-            </label>
-            <span class="field-meta show-mobile" id="scanCameraMeta">Idle</span>
+        <div id="scan-camera-block">
+          <div class="field">
+            <div class="field-label-row">
+              <label>
+                <span class="show-desktop">Camera</span>
+                <span class="show-mobile">Camera · live capture</span>
+              </label>
+              <span class="field-meta show-mobile" id="scanCameraMeta">Idle</span>
+            </div>
+            <div class="btn-row scan-camera-row">
+              <button class="btn accent" id="scanStartBtn" type="button">Start camera</button>
+              <button class="btn secondary" id="scanStopBtn" type="button" disabled>Stop camera</button>
+              <button class="btn accent" id="scanCaptureBtn" type="button" style="display:none;">Scan words</button>
+            </div>
           </div>
-          <div class="btn-row scan-camera-row">
-            <button class="btn accent" id="scanStartBtn" type="button">Start camera</button>
-            <button class="btn secondary" id="scanStopBtn" type="button" disabled>Stop camera</button>
-            <button class="btn accent" id="scanCaptureBtn" type="button" style="display:none;">Scan words</button>
+
+          <div id="scan-video-wrap" style="display:none;">
+            <video id="scan-video" playsinline muted></video>
+            <div id="scan-word-layer"></div>
+            <div class="scan-reticle" id="scan-reticle"></div>
+          </div>
+
+          <div id="scan-status" class="scan-status">Camera is off.</div>
+
+          <div id="scan-picker" class="scan-picker" style="display:none;">
+            <label>Multiple codes detected — choose one</label>
+            <div id="scan-picker-list" class="scan-picker-list"></div>
           </div>
         </div>
 
-        <div id="scan-video-wrap" style="display:none;">
-          <video id="scan-video" playsinline muted></video>
-          <div id="scan-word-layer"></div>
-          <div class="scan-reticle" id="scan-reticle"></div>
-        </div>
-
-        <div id="scan-status" class="scan-status">Camera is off.</div>
-
-        <div id="scan-picker" class="scan-picker" style="display:none;">
-          <label>Multiple codes detected — choose one</label>
-          <div id="scan-picker-list" class="scan-picker-list"></div>
+        <div id="pack-station-card" class="pack-station-card" hidden>
+          <div class="pack-station-kicker">Pack station QR</div>
+          <div id="packStationQr" class="pack-station-qr"></div>
+          <div class="pack-station-code">MAN1-FC-PACK-1</div>
         </div>
 
         <div class="field" id="scan-value-field">
@@ -2591,7 +2644,7 @@ if(window.caches){
   </button>
 </nav>
 
-<script src="/racktag.js?v=3"></script>
+<script src="/racktag.js?v=5"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
