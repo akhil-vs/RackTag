@@ -69,12 +69,9 @@
   }
 
   function syncCartMaps(){
-    const cartField = document.getElementById('cart-map-field');
     const binField = document.getElementById('cartbin-map-field');
     const manual = document.getElementById('cartbin-manual');
-    const showCart = cartInVisualRange('cart-xxx');
     const showBin = cartInVisualRange('cartbin-xxx');
-    if(cartField) cartField.hidden = !showCart;
     if(binField) binField.hidden = !showBin;
     if(manual) manual.hidden = showBin;
 
@@ -95,19 +92,11 @@
         });
       }
     }
-    const sameCart = document.getElementById('cart-xxx').value === document.getElementById('cartbin-xxx').value;
     paintCartMap('cartbin-map', level, slot);
-    paintCartMap('cart-map', sameCart ? level : '', sameCart ? slot : '');
     const mapLabel = document.getElementById('cartbinMapLabel');
     if(mapLabel) mapLabel.textContent = level + '-' + slot;
   }
 
-  buildCartMap('cart-map', function(bin){
-    document.getElementById('cartbin-xxx').value = document.getElementById('cart-xxx').value;
-    selectGroupValue('cartbin-y', bin.level);
-    selectGroupValue('cartbin-z', bin.slot);
-    activateTab('cartbin');
-  });
   buildCartMap('cartbin-map', function(bin){
     selectGroupValue('cartbin-y', bin.level);
     selectGroupValue('cartbin-z', bin.slot);
@@ -636,7 +625,6 @@
     const t = getTemplates();
     appendSyntax(root, syntaxFromPattern(t.cart.pattern, { xxx: xxx, cart: xxx }));
     setFormatBadge('cartFormatBadge', 'cartFormatTitle', 'cartFormatSub', stateFor('cart'));
-    syncCartMaps();
   }
 
   const PACK_STATION_QR = 'MAN1-FC-PACK-1';
