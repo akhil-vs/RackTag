@@ -27,15 +27,11 @@
   const CART_MAP_LEVELS = ['A', 'B'];
   const CART_MAP_SLOTS = ['1', '2', '3'];
 
-  function cartMapBins(cartNumber){
+  function cartMapBins(){
     const bins = [];
-    const startBin = (cartNumber - 1) * 6 + 1;
-    let binIndex = 0;
     CART_MAP_LEVELS.forEach(function(level){
       CART_MAP_SLOTS.forEach(function(slot){
-        const binNo = startBin + binIndex;
-        bins.push({ level: level, slot: slot, label: String(binNo), binNo: binNo });
-        binIndex++;
+        bins.push({ level: level, slot: slot, label: level + '-' + slot });
       });
     });
     return bins;
@@ -49,26 +45,16 @@
   function buildCartMap(id, onPick){
     const root = document.getElementById(id);
     if(!root) return;
-    root._onPick = onPick;
-  }
-
-  function rebuildCartMapBins(id, cartNumber){
-    const root = document.getElementById(id);
-    if(!root) return;
-    root.innerHTML = '';
-    const bins = cartMapBins(cartNumber);
+    const bins = cartMapBins();
     bins.forEach(function(bin){
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'cart-bin';
       btn.dataset.level = bin.level;
       btn.dataset.slot = bin.slot;
-      btn.dataset.binNo = bin.binNo;
       btn.textContent = bin.label;
       btn.setAttribute('aria-pressed', 'false');
-      btn.addEventListener('click', function(){ 
-        if(root._onPick) root._onPick(bin); 
-      });
+      btn.addEventListener('click', function(){ onPick(bin); });
       root.appendChild(btn);
     });
   }
@@ -86,43 +72,33 @@
   function syncCartMaps(){
     const binField = document.getElementById('cartbin-map-field');
     const manual = document.getElementById('cartbin-manual');
-    const cartInput = document.getElementById('cartbin-xxx');
-    const cartNumber = parseInt(cartInput.value, 10);
     const showBin = cartInVisualRange('cartbin-xxx');
     
     if(binField) binField.hidden = !showBin;
     if(manual) manual.hidden = showBin;
 
-    if(showBin && Number.isInteger(cartNumber)){
-      rebuildCartMapBins('cartbin-map', cartNumber);
-      
-      const yEl = document.getElementById('cartbin-y');
-      const zEl = document.getElementById('cartbin-z');
-      let level = yEl && yEl.dataset.value ? yEl.dataset.value : 'A';
-      let slot = zEl && zEl.dataset.value ? zEl.dataset.value : '1';
-      
-      if(CART_MAP_LEVELS.indexOf(level) === -1 || CART_MAP_SLOTS.indexOf(String(slot)) === -1){
-        selectGroupValue('cartbin-y', 'A');
-        selectGroupValue('cartbin-z', '1');
-        level = 'A';
-        slot = '1';
-        if(!syncCartMaps.pending){
-          syncCartMaps.pending = true;
-          queueMicrotask(function(){
-            syncCartMaps.pending = false;
-            refresh();
-          });
-        }
-      }
-      paintCartMap('cartbin-map', level, slot);
-      
-      const mapLabel = document.getElementById('cartbinMapLabel');
-      if(mapLabel){
-        const bins = cartMapBins(cartNumber);
-        const selectedBin = bins.find(b => b.level === level && b.slot === slot);
-        if(selectedBin) mapLabel.textContent = selectedBin.label;
+    const yEl = document.getElementById('cartbin-y');
+    const zEl = document.getElementById('cartbin-z');
+    let level = yEl && yEl.dataset.value ? yEl.dataset.value : 'A';
+    let slot = zEl && zEl.dataset.value ? zEl.dataset.value : '1';
+    
+    if(showBin && (CART_MAP_LEVELS.indexOf(level) === -1 || CART_MAP_SLOTS.indexOf(String(slot)) === -1)){
+      selectGroupValue('cartbin-y', 'A');
+      selectGroupValue('cartbin-z', '1');
+      level = 'A';
+      slot = '1';
+      if(!syncCartMaps.pending){
+        syncCartMaps.pending = true;
+        queueMicrotask(function(){
+          syncCartMaps.pending = false;
+          refresh();
+        });
       }
     }
+    paintCartMap('cartbin-map', level, slot);
+    
+    const mapLabel = document.getElementById('cartbinMapLabel');
+    if(mapLabel) mapLabel.textContent = level + '-' + slot;
   }
 
   buildCartMap('cartbin-map', function(bin){
@@ -473,10 +449,8 @@
         actionAttempted = false;
       }
       const cart = formatNum(xxx);
-      const bins = cartMapBins(xxx);
-      const selectedBin = bins.find(b => b.level === y && b.slot === String(z));
-      const binNo = selectedBin ? selectedBin.binNo : ((xxx - 1) * 6 + 1);
-      return applyPattern(templates.cartbin.pattern, { xxx: cart, y: y, z: binNo, cart: cart, level: y, slot: binNo, bin: binNo });
+      const slot = formatNum(z);
+      return applyPattern(templates.cartbin.pattern, { xxx: cart, y: y, z: slot, cart: cart, level: y, slot: slot });
     }
     if(tab === 'scan'){
       const raw = document.getElementById('scan-value').value;
@@ -669,7 +643,6 @@
     const yEl = document.getElementById('cartbin-y');
     const zEl = document.getElementById('cartbin-z');
     const xxx = xxxEl ? xxxEl.value : '';
-    const cartNum = parseInt(xxx, 10);
     const y = yEl && yEl.dataset.value ? yEl.dataset.value : 'A';
     const z = zEl && zEl.dataset.value ? zEl.dataset.value : '1';
     const tier = document.getElementById('cartbinTierLabel');
@@ -680,14 +653,8 @@
     const root = document.getElementById('cartbinSyntax');
     if(!root) return;
     const t = getTemplates();
-    let binNo = '';
-    if(Number.isInteger(cartNum)){
-      const bins = cartMapBins(cartNum);
-      const selectedBin = bins.find(b => b.level === y && b.slot === z);
-      binNo = selectedBin ? selectedBin.binNo : '';
-    }
     appendSyntax(root, syntaxFromPattern(t.cartbin.pattern, {
-      xxx: xxx, y: y, z: binNo, cart: xxx, level: y, slot: binNo, bin: binNo
+      xxx: xxx, y: y, z: z, cart: xxx, level: y, slot: z
     }));
     setFormatBadge('cartbinFormatBadge', 'cartbinFormatTitle', 'cartbinFormatSub', stateFor('cartbin'));
   }
