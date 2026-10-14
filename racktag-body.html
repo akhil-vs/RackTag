@@ -146,6 +146,17 @@
           </div>
           <div class="err-msg">Enter a whole number between 1 and 999.</div>
         </div>
+
+        <div class="field cart-map-field" id="cart-map-field" hidden>
+          <div class="field-label-row">
+            <label>Bins on this cart</label>
+            <span class="field-meta">A-1 through D-6</span>
+          </div>
+          <div class="cart-face">
+            <div class="cart-handle" aria-hidden="true"></div>
+            <div class="cart-map" id="cart-map" role="group" aria-label="Bins A-1 through D-6"></div>
+          </div>
+        </div>
       </div>
 
       <!-- CART BIN NUMBER -->
@@ -176,20 +187,33 @@
           <div class="err-msg">Enter a whole number between 1 and 999.</div>
         </div>
 
-        <div class="field">
+        <div class="field cart-map-field" id="cartbin-map-field" hidden>
           <div class="field-label-row">
-            <label>Level · A–N</label>
-            <span class="field-meta">Selected: <b id="cartbinTierLabel">Level A</b></span>
+            <label>Bins on this cart</label>
+            <span class="field-meta">Selected: <b id="cartbinMapLabel">A-1</b></span>
           </div>
-          <div class="btn-group" id="cartbin-y" data-value="A"></div>
+          <div class="cart-face">
+            <div class="cart-handle" aria-hidden="true"></div>
+            <div class="cart-map" id="cartbin-map" role="group" aria-label="Bins A-1 through D-6"></div>
+          </div>
         </div>
 
-        <div class="field">
-          <div class="field-label-row">
-            <label>Slot · 1–6</label>
-            <span class="field-meta">Selected: <b id="cartbinSlotLabel">Slot 1</b></span>
+        <div class="cart-manual" id="cartbin-manual">
+          <div class="field">
+            <div class="field-label-row">
+              <label>Level · A–N</label>
+              <span class="field-meta">Selected: <b id="cartbinTierLabel">Level A</b></span>
+            </div>
+            <div class="btn-group" id="cartbin-y" data-value="A"></div>
           </div>
-          <div class="btn-group" id="cartbin-z" data-value="1"></div>
+
+          <div class="field">
+            <div class="field-label-row">
+              <label>Slot · 1–6</label>
+              <span class="field-meta">Selected: <b id="cartbinSlotLabel">Slot 1</b></span>
+            </div>
+            <div class="btn-group" id="cartbin-z" data-value="1"></div>
+          </div>
         </div>
       </div>
 

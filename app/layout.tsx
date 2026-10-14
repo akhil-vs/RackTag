@@ -51,7 +51,7 @@ export default function RootLayout({
           src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"
           strategy="lazyOnload"
         />
-          <Script src="/racktag.js?v=7" strategy="afterInteractive" />
+          <Script src="/racktag.js?v=8" strategy="afterInteractive" />
       </body>
     </html>
   );

@@ -24,6 +24,96 @@
   buildButtonGroup('cartbin-y', letters);
   buildButtonGroup('cartbin-z', slots);
 
+  const CART_MAP_LEVELS = ['A', 'B', 'C', 'D'];
+  const CART_MAP_SLOTS = ['1', '2', '3', '4', '5', '6'];
+
+  function cartMapBins(){
+    const bins = [];
+    CART_MAP_LEVELS.forEach(function(level){
+      CART_MAP_SLOTS.forEach(function(slot){
+        bins.push({ level: level, slot: slot, label: level + '-' + slot });
+      });
+    });
+    return bins;
+  }
+
+  function cartInVisualRange(inputId){
+    const n = parseInt(document.getElementById(inputId).value, 10);
+    return Number.isInteger(n) && n >= 1 && n <= 14;
+  }
+
+  function buildCartMap(id, onPick){
+    const root = document.getElementById(id);
+    if(!root) return;
+    cartMapBins().forEach(function(bin){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cart-bin';
+      btn.dataset.level = bin.level;
+      btn.dataset.slot = bin.slot;
+      btn.textContent = bin.label;
+      btn.setAttribute('aria-pressed', 'false');
+      btn.addEventListener('click', function(){ onPick(bin); });
+      root.appendChild(btn);
+    });
+  }
+
+  function paintCartMap(id, level, slot){
+    const root = document.getElementById(id);
+    if(!root) return;
+    root.querySelectorAll('.cart-bin').forEach(function(btn){
+      const on = btn.dataset.level === level && btn.dataset.slot === slot;
+      btn.classList.toggle('selected', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+
+  function syncCartMaps(){
+    const cartField = document.getElementById('cart-map-field');
+    const binField = document.getElementById('cartbin-map-field');
+    const manual = document.getElementById('cartbin-manual');
+    const showCart = cartInVisualRange('cart-xxx');
+    const showBin = cartInVisualRange('cartbin-xxx');
+    if(cartField) cartField.hidden = !showCart;
+    if(binField) binField.hidden = !showBin;
+    if(manual) manual.hidden = showBin;
+
+    const yEl = document.getElementById('cartbin-y');
+    const zEl = document.getElementById('cartbin-z');
+    let level = yEl && yEl.dataset.value ? yEl.dataset.value : 'A';
+    let slot = zEl && zEl.dataset.value ? zEl.dataset.value : '1';
+    if(showBin && (CART_MAP_LEVELS.indexOf(level) === -1 || CART_MAP_SLOTS.indexOf(String(slot)) === -1)){
+      selectGroupValue('cartbin-y', 'A');
+      selectGroupValue('cartbin-z', '1');
+      level = 'A';
+      slot = '1';
+      if(!syncCartMaps.pending){
+        syncCartMaps.pending = true;
+        queueMicrotask(function(){
+          syncCartMaps.pending = false;
+          refresh();
+        });
+      }
+    }
+    const sameCart = document.getElementById('cart-xxx').value === document.getElementById('cartbin-xxx').value;
+    paintCartMap('cartbin-map', level, slot);
+    paintCartMap('cart-map', sameCart ? level : '', sameCart ? slot : '');
+    const mapLabel = document.getElementById('cartbinMapLabel');
+    if(mapLabel) mapLabel.textContent = level + '-' + slot;
+  }
+
+  buildCartMap('cart-map', function(bin){
+    document.getElementById('cartbin-xxx').value = document.getElementById('cart-xxx').value;
+    selectGroupValue('cartbin-y', bin.level);
+    selectGroupValue('cartbin-z', bin.slot);
+    activateTab('cartbin');
+  });
+  buildCartMap('cartbin-map', function(bin){
+    selectGroupValue('cartbin-y', bin.level);
+    selectGroupValue('cartbin-z', bin.slot);
+    refresh();
+  });
+
   const tabs = document.querySelectorAll('.tab, .app-nav-item');
   const panels = { bin:'panel-bin', cart:'panel-cart', cartbin:'panel-cartbin', scan:'panel-scan', qr:'panel-qr' };
   const typeLabels = { bin:'Bin', cart:'Cart', cartbin:'Cart bin', scan:'Scan', qr:'Custom' };
@@ -546,6 +636,7 @@
     const t = getTemplates();
     appendSyntax(root, syntaxFromPattern(t.cart.pattern, { xxx: xxx, cart: xxx }));
     setFormatBadge('cartFormatBadge', 'cartFormatTitle', 'cartFormatSub', stateFor('cart'));
+    syncCartMaps();
   }
 
   const PACK_STATION_QR = 'MAN1-FC-PACK-1';
@@ -593,6 +684,7 @@
       xxx: xxx, y: y, z: z, cart: xxx, level: y, slot: z
     }));
     setFormatBadge('cartbinFormatBadge', 'cartbinFormatTitle', 'cartbinFormatSub', stateFor('cartbin'));
+    syncCartMaps();
   }
 
   ['cart-xxx', 'cartbin-xxx'].forEach(id=>{
