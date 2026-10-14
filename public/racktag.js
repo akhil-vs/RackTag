@@ -24,28 +24,70 @@
   buildButtonGroup('cartbin-y', letters);
   buildButtonGroup('cartbin-z', slots);
 
-  const CART_MAP_LEVELS = ['A', 'B'];
-  const CART_MAP_SLOTS = ['1', '2', '3'];
+  const CART_BIN_COUNTS = {
+    1: 16, 2: 16, 3: 16, 4: 16, 5: 16, 6: 16,
+    7: 18, 8: 18, 9: 18, 10: 18, 11: 18, 12: 18, 13: 18, 14: 18, 15: 18, 16: 18, 17: 18, 18: 18, 19: 18, 20: 18,
+    21: 18, 22: 18, 23: 18, 24: 18, 25: 18, 26: 18, 27: 18, 28: 18, 29: 18, 30: 18, 31: 18, 32: 18, 33: 18, 34: 18,
+    35: 18, 36: 18, 37: 18, 38: 18, 39: 18, 40: 18, 41: 18, 42: 18, 43: 18, 44: 18, 45: 18, 46: 18, 47: 18, 48: 18,
+    49: 18, 50: 18, 51: 18, 52: 18, 53: 18, 54: 18, 55: 18, 56: 18, 57: 18, 58: 18, 59: 18, 60: 18, 61: 18, 62: 18,
+    63: 18, 64: 18, 65: 18, 66: 18, 67: 18, 68: 18, 69: 18,
+    70: 30, 71: 30, 72: 30, 73: 30, 74: 30, 75: 30, 76: 30, 77: 30, 78: 30, 79: 30, 80: 30, 81: 30, 82: 30, 83: 30,
+    84: 30, 85: 30, 86: 30, 87: 30, 88: 30, 89: 30, 90: 30, 91: 30, 92: 30, 93: 30, 94: 30, 95: 30, 96: 30, 97: 30,
+    98: 30, 99: 30, 100: 30, 101: 30, 102: 30, 103: 30, 104: 30, 105: 30, 106: 30, 107: 30, 108: 30, 109: 30, 110: 30,
+    111: 30, 112: 30, 113: 30, 114: 30, 115: 30, 116: 30, 117: 30, 118: 30, 119: 30, 120: 30, 121: 30, 122: 30, 123: 30,
+    124: 30, 125: 30, 126: 30, 127: 30, 128: 30, 129: 30, 130: 30, 131: 30, 132: 30, 133: 30, 134: 30, 135: 30, 136: 30,
+    137: 30, 138: 30
+  };
 
-  function cartMapBins(){
+  function getGridLayout(binCount){
+    if(binCount === 10) return { rows: 5, cols: 2 };
+    if(binCount === 16) return { rows: 4, cols: 4 };
+    if(binCount === 18) return { rows: 3, cols: 6 };
+    if(binCount === 20) return { rows: 4, cols: 5 };
+    if(binCount === 24) return { rows: 4, cols: 6 };
+    if(binCount === 30) return { rows: 5, cols: 6 };
+    if(binCount === 48) return { rows: 8, cols: 6 };
+    return { rows: 2, cols: 3 };
+  }
+
+  function cartMapBins(cartNumber){
+    const binCount = CART_BIN_COUNTS[cartNumber] || 6;
+    const layout = getGridLayout(binCount);
     const bins = [];
-    CART_MAP_LEVELS.forEach(function(level){
-      CART_MAP_SLOTS.forEach(function(slot){
+    const levels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    
+    for(let row = 0; row < layout.rows; row++){
+      const level = levels[row];
+      for(let col = 0; col < layout.cols; col++){
+        const slot = String(col + 1);
         bins.push({ level: level, slot: slot, label: level + '-' + slot });
-      });
-    });
+      }
+    }
     return bins;
   }
 
   function cartInVisualRange(inputId){
     const n = parseInt(document.getElementById(inputId).value, 10);
-    return Number.isInteger(n) && n >= 1 && n <= 139;
+    return Number.isInteger(n) && n >= 1 && n <= 138 && CART_BIN_COUNTS[n];
   }
 
   function buildCartMap(id, onPick){
     const root = document.getElementById(id);
     if(!root) return;
-    const bins = cartMapBins();
+    root._onPick = onPick;
+  }
+
+  function rebuildCartMapBins(id, cartNumber){
+    const root = document.getElementById(id);
+    if(!root) return;
+    root.innerHTML = '';
+    
+    const binCount = CART_BIN_COUNTS[cartNumber] || 6;
+    const layout = getGridLayout(binCount);
+    
+    root.style.gridTemplateColumns = 'repeat(' + layout.cols + ', minmax(0, 1fr))';
+    
+    const bins = cartMapBins(cartNumber);
     bins.forEach(function(bin){
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -54,7 +96,9 @@
       btn.dataset.slot = bin.slot;
       btn.textContent = bin.label;
       btn.setAttribute('aria-pressed', 'false');
-      btn.addEventListener('click', function(){ onPick(bin); });
+      btn.addEventListener('click', function(){ 
+        if(root._onPick) root._onPick(bin); 
+      });
       root.appendChild(btn);
     });
   }
@@ -72,33 +116,42 @@
   function syncCartMaps(){
     const binField = document.getElementById('cartbin-map-field');
     const manual = document.getElementById('cartbin-manual');
+    const cartInput = document.getElementById('cartbin-xxx');
+    const cartNumber = parseInt(cartInput.value, 10);
     const showBin = cartInVisualRange('cartbin-xxx');
     
     if(binField) binField.hidden = !showBin;
     if(manual) manual.hidden = showBin;
 
-    const yEl = document.getElementById('cartbin-y');
-    const zEl = document.getElementById('cartbin-z');
-    let level = yEl && yEl.dataset.value ? yEl.dataset.value : 'A';
-    let slot = zEl && zEl.dataset.value ? zEl.dataset.value : '1';
-    
-    if(showBin && (CART_MAP_LEVELS.indexOf(level) === -1 || CART_MAP_SLOTS.indexOf(String(slot)) === -1)){
-      selectGroupValue('cartbin-y', 'A');
-      selectGroupValue('cartbin-z', '1');
-      level = 'A';
-      slot = '1';
-      if(!syncCartMaps.pending){
-        syncCartMaps.pending = true;
-        queueMicrotask(function(){
-          syncCartMaps.pending = false;
-          refresh();
-        });
+    if(showBin && Number.isInteger(cartNumber)){
+      rebuildCartMapBins('cartbin-map', cartNumber);
+      
+      const yEl = document.getElementById('cartbin-y');
+      const zEl = document.getElementById('cartbin-z');
+      let level = yEl && yEl.dataset.value ? yEl.dataset.value : 'A';
+      let slot = zEl && zEl.dataset.value ? zEl.dataset.value : '1';
+      
+      const bins = cartMapBins(cartNumber);
+      const validBin = bins.find(b => b.level === level && b.slot === slot);
+      
+      if(!validBin){
+        selectGroupValue('cartbin-y', 'A');
+        selectGroupValue('cartbin-z', '1');
+        level = 'A';
+        slot = '1';
+        if(!syncCartMaps.pending){
+          syncCartMaps.pending = true;
+          queueMicrotask(function(){
+            syncCartMaps.pending = false;
+            refresh();
+          });
+        }
       }
+      paintCartMap('cartbin-map', level, slot);
+      
+      const mapLabel = document.getElementById('cartbinMapLabel');
+      if(mapLabel) mapLabel.textContent = level + '-' + slot;
     }
-    paintCartMap('cartbin-map', level, slot);
-    
-    const mapLabel = document.getElementById('cartbinMapLabel');
-    if(mapLabel) mapLabel.textContent = level + '-' + slot;
   }
 
   buildCartMap('cartbin-map', function(bin){
