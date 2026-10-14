@@ -39,7 +39,7 @@
 
   function cartInVisualRange(inputId){
     const n = parseInt(document.getElementById(inputId).value, 10);
-    return Number.isInteger(n) && n >= 1 && n <= 999;
+    return Number.isInteger(n) && n >= 1 && n <= 139;
   }
 
   function buildCartMap(id, onPick){
@@ -162,8 +162,8 @@
 
   const DEFAULT_TEMPLATES = {
     bin: { pattern: 'P-01-A-{xxx}-{y}-{zzzz}', validation: { xxx: { min: 101, max: 113 }, zzzz: { min: 1000, max: 1999 } } },
-    cart: { pattern: 'CRT-MAN1-{xxx}', validation: { xxx: { min: 1, max: 999 } } },
-    cartbin: { pattern: 'CRT-MAN1-{xxx}-{y}-{z}', validation: { xxx: { min: 1, max: 999 } } }
+    cart: { pattern: 'CRT-MAN1-{xxx}', validation: { xxx: { min: 1, max: 139 } } },
+    cartbin: { pattern: 'CRT-MAN1-{xxx}-{y}-{z}', validation: { xxx: { min: 1, max: 139 } } }
   };
 
   let orgTemplates = null;
