@@ -235,12 +235,6 @@
     el.max = String(bounds.max);
   }
 
-  function friendlyPattern(pattern, map){
-    return Object.keys(map).reduce(function(out, key){
-      return out.split('{' + key + '}').join('{' + map[key] + '}');
-    }, pattern);
-  }
-
   function applyTemplateChrome(){
     const t = getTemplates();
     setBounds('bin-xxx', t.bin.validation.xxx);
@@ -251,9 +245,6 @@
     setText('binIdRange', rangeLabel(t.bin.validation.zzzz));
     setText('cartRange', rangeLabel(t.cart.validation.xxx));
     setText('cartbinRange', rangeLabel(t.cartbin.validation.xxx));
-    setText('binTemplateStrip', 'Site template · ' + friendlyPattern(t.bin.pattern, { xxx:'aisle', y:'level', zzzz:'bin' }));
-    setText('cartTemplateStrip', 'Site template · ' + friendlyPattern(t.cart.pattern, { xxx:'cart' }));
-    setText('cartbinTemplateStrip', 'Site template · ' + friendlyPattern(t.cartbin.pattern, { xxx:'cart', y:'level', z:'slot' }));
     const prefix = t.bin.pattern.split('{')[0].replace(/-+$/, '');
     setText('binZoneMeta', prefix || 'Site');
   }
@@ -602,14 +593,14 @@
   }
 
   function renderBinSyntax(){
-    const root = document.getElementById('binSyntax');
-    if(!root) return;
     const yEl = document.getElementById('bin-y');
     const y = yEl && yEl.dataset.value ? yEl.dataset.value : 'A';
-    const xxx = document.getElementById('bin-xxx') ? document.getElementById('bin-xxx').value : '';
-    const zzzz = document.getElementById('bin-zzzz') ? document.getElementById('bin-zzzz').value : '';
     const tier = document.getElementById('binTierLabel');
     if(tier) tier.textContent = 'Level ' + y;
+    const root = document.getElementById('binSyntax');
+    if(!root) return;
+    const xxx = document.getElementById('bin-xxx') ? document.getElementById('bin-xxx').value : '';
+    const zzzz = document.getElementById('bin-zzzz') ? document.getElementById('bin-zzzz').value : '';
     const t = getTemplates();
     appendSyntax(root, syntaxFromPattern(t.bin.pattern, {
       xxx: xxx, y: y, zzzz: zzzz, aisle: xxx, level: y, bin: zzzz
@@ -636,27 +627,14 @@
   };
 
   function renderScanSyntax(){
-    const root = document.getElementById('scanSyntax');
-    if(!root) return;
-    const valEl = document.getElementById('scan-value');
-    const val = valEl ? valEl.value.trim() : '';
     const modeLabel = document.getElementById('scanModeLabel');
-    if(modeLabel){
-      const modeEl = document.getElementById('scan-mode');
-      const mode = modeEl && modeEl.dataset.value ? modeEl.dataset.value : 'barcode';
-      modeLabel.textContent = scanModeLabels[mode] || 'Barcode';
-      updateScanChrome(mode);
-    }
-    root.replaceChildren();
-    const node = document.createElement('b');
-    node.textContent = val || '—';
-    root.appendChild(node);
-    setFormatBadge('scanFormatBadge', 'scanFormatTitle', 'scanFormatSub', stateFor('scan'));
+    if(!modeLabel) return;
+    const modeEl = document.getElementById('scan-mode');
+    const mode = modeEl && modeEl.dataset.value ? modeEl.dataset.value : 'barcode';
+    modeLabel.textContent = scanModeLabels[mode] || 'Barcode';
   }
 
   function renderCartBinSyntax(){
-    const root = document.getElementById('cartbinSyntax');
-    if(!root) return;
     const xxxEl = document.getElementById('cartbin-xxx');
     const yEl = document.getElementById('cartbin-y');
     const zEl = document.getElementById('cartbin-z');
@@ -667,12 +645,14 @@
     const slot = document.getElementById('cartbinSlotLabel');
     if(tier) tier.textContent = 'Level ' + y;
     if(slot) slot.textContent = 'Slot ' + z;
+    syncCartMaps();
+    const root = document.getElementById('cartbinSyntax');
+    if(!root) return;
     const t = getTemplates();
     appendSyntax(root, syntaxFromPattern(t.cartbin.pattern, {
       xxx: xxx, y: y, z: z, cart: xxx, level: y, slot: z
     }));
     setFormatBadge('cartbinFormatBadge', 'cartbinFormatTitle', 'cartbinFormatSub', stateFor('cartbin'));
-    syncCartMaps();
   }
 
   ['cart-xxx', 'cartbin-xxx'].forEach(id=>{
@@ -712,21 +692,6 @@
     text: 'Read text mode — fill the frame with the text on screen, hold steady, then tap Scan words. For phone/computer screens, reduce glare and use max brightness.',
     pack: 'Shows the static pack station QR for MAN1-FC-PACK-1. Hold the screen up to scan it, or add the label to the print sheet.'
   };
-
-  function updateScanChrome(mode){
-    const title = document.getElementById('scanSyntaxTitle');
-    const kicker = document.getElementById('scanSyntaxKicker');
-    const strip = document.getElementById('scanTemplateStrip');
-    if(mode === 'pack'){
-      if(title) title.textContent = 'Pack station QR';
-      if(kicker) kicker.textContent = 'Static code';
-      if(strip) strip.textContent = PACK_STATION_QR;
-    } else {
-      if(title) title.textContent = 'Barcode scan encoder';
-      if(kicker) kicker.textContent = 'Decoded payload';
-      if(strip) strip.textContent = 'Decoded from camera';
-    }
-  }
 
   function renderPackStationQr(){
     const holder = document.getElementById('packStationQr');
