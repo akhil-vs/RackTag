@@ -7,7 +7,7 @@
       <div class="mobile-brand">
         <div class="rt-badge" aria-hidden="true">RT<span class="rt-dot"></span></div>
         <div class="mobile-brand-copy">
-          <div class="mobile-wordmark">Racktag <span class="pro-pill">Pro</span></div>
+          <div class="mobile-wordmark">Racktag <span class="pro-pill" id="proPill" hidden>Pro</span></div>
           <div class="mobile-suite">Warehouse suite</div>
         </div>
       </div>
@@ -34,12 +34,12 @@
 </div>
 
 <div class="wrap">
-  <div class="tabs">
-    <div class="tab active" data-tab="qr">QR Generator</div>
-    <div class="tab" data-tab="bin">Bin Location</div>
-    <div class="tab" data-tab="cart">Cart Number</div>
-    <div class="tab" data-tab="cartbin">Cart Bin Number</div>
-    <div class="tab" data-tab="scan">From Barcode Photo</div>
+  <div class="tabs" role="tablist" aria-label="Label type">
+    <button type="button" class="tab active" role="tab" aria-selected="true" data-tab="qr">Custom</button>
+    <button type="button" class="tab" role="tab" aria-selected="false" data-tab="bin">Bin</button>
+    <button type="button" class="tab" role="tab" aria-selected="false" data-tab="cart">Cart</button>
+    <button type="button" class="tab" role="tab" aria-selected="false" data-tab="cartbin">Cart bin</button>
+    <button type="button" class="tab" role="tab" aria-selected="false" data-tab="scan">Scan</button>
   </div>
 
   <div class="grid">
@@ -50,17 +50,14 @@
       <div class="tab-panel" id="panel-qr">
         <div class="encoder-head">
           <span class="encoder-mark" aria-hidden="true"></span>
-          <span class="encoder-title">Custom payload encoder</span>
+          <span class="encoder-title">Custom</span>
           <span class="char-meter"><b id="charCount">0</b> / 256 chars</span>
         </div>
         <div class="template-strip show-desktop">Any text or URL</div>
 
         <div class="field" id="qr-text-field">
           <div class="field-label-row">
-            <label for="qr-text">
-              <span class="show-desktop">QR content</span>
-              <span class="show-mobile">Payload data (raw / url)</span>
-            </label>
+            <label for="qr-text">Label text</label>
             <span class="live-sync" id="liveSync"><i></i>Live synced</span>
           </div>
           <div class="payload-wrap">
@@ -77,24 +74,21 @@
         <div class="syntax-card">
           <div class="syntax-head">
             <span class="syntax-mark" aria-hidden="true"></span>
-            <span class="syntax-title">Bin location encoder</span>
+            <span class="syntax-title">Bin</span>
             <span class="format-badge is-valid" id="binFormatBadge">
               <b id="binFormatTitle">Format valid</b>
               <span class="format-sub"><i></i><em id="binFormatSub">Verified</em></span>
             </span>
           </div>
-          <div class="syntax-kicker">Constructed syntax payload</div>
+          <div class="syntax-kicker">Site code</div>
           <div class="syntax-code" id="binSyntax" aria-live="polite"></div>
         </div>
-        <div class="template-strip show-desktop">P-01-A-XXX-Y-ZZZZ</div>
+        <div class="template-strip" id="binTemplateStrip">Site template · P-01-A-{aisle}-{level}-{bin}</div>
 
         <div class="field" id="bin-xxx-field">
           <div class="field-label-row">
-            <label for="bin-xxx">
-              <span class="show-desktop">Aisle position (XXX) · 101–113</span>
-              <span class="show-mobile">Aisle position (XXX) · 101–113</span>
-            </label>
-            <span class="field-meta show-mobile">Zone P-01</span>
+            <label for="bin-xxx">Aisle · <span id="binAisleRange">101–113</span></label>
+            <span class="field-meta" id="binZoneMeta">P-01-A</span>
           </div>
           <div class="stepper">
             <button type="button" class="step" data-step="-1" data-target="bin-xxx" aria-label="Decrease aisle position">−</button>
@@ -106,22 +100,15 @@
 
         <div class="field">
           <div class="field-label-row">
-            <label>
-              <span class="show-desktop">Level (Y) · A–N</span>
-              <span class="show-mobile">Level (Y) · A–N vertical tier</span>
-            </label>
-            <span class="field-meta show-mobile">Selected: <b id="binTierLabel">Tier A</b></span>
+            <label>Level · A–N</label>
+            <span class="field-meta">Selected: <b id="binTierLabel">Level A</b></span>
           </div>
           <div class="btn-group" id="bin-y" data-value="A"></div>
         </div>
 
         <div class="field" id="bin-zzzz-field">
           <div class="field-label-row">
-            <label for="bin-zzzz">
-              <span class="show-desktop">Bin ID (ZZZZ) · 1000–1999</span>
-              <span class="show-mobile">Bin ID (ZZZZ) · 1000–1999 slot</span>
-            </label>
-            <span class="field-meta show-mobile">Slot index</span>
+            <label for="bin-zzzz">Bin · <span id="binIdRange">1000–1999</span></label>
           </div>
           <div class="stepper">
             <button type="button" class="step" data-step="-1" data-target="bin-zzzz" aria-label="Decrease bin ID">−</button>
@@ -137,24 +124,20 @@
         <div class="syntax-card">
           <div class="syntax-head">
             <span class="syntax-mark" aria-hidden="true"></span>
-            <span class="syntax-title">Cart number encoder</span>
+            <span class="syntax-title">Cart</span>
             <span class="format-badge is-valid" id="cartFormatBadge">
               <b id="cartFormatTitle">Format valid</b>
               <span class="format-sub"><i></i><em id="cartFormatSub">Verified</em></span>
             </span>
           </div>
-          <div class="syntax-kicker">Constructed syntax payload</div>
+          <div class="syntax-kicker">Site code</div>
           <div class="syntax-code" id="cartSyntax" aria-live="polite"></div>
         </div>
-        <div class="template-strip show-desktop">CRT-MAN1-N</div>
+        <div class="template-strip" id="cartTemplateStrip">Site template · CRT-MAN1-{cart}</div>
 
         <div class="field" id="cart-xxx-field">
           <div class="field-label-row">
-            <label for="cart-xxx">
-              <span class="show-desktop">Cart number (N) · 1–999</span>
-              <span class="show-mobile">Cart number (N) · 1–999</span>
-            </label>
-            <span class="field-meta show-mobile">Fleet ID</span>
+            <label for="cart-xxx">Cart · <span id="cartRange">1–999</span></label>
           </div>
           <div class="stepper">
             <button type="button" class="step" data-step="-1" data-target="cart-xxx" aria-label="Decrease cart number">−</button>
@@ -170,24 +153,20 @@
         <div class="syntax-card">
           <div class="syntax-head">
             <span class="syntax-mark" aria-hidden="true"></span>
-            <span class="syntax-title">Cart bin number encoder</span>
+            <span class="syntax-title">Cart bin</span>
             <span class="format-badge is-valid" id="cartbinFormatBadge">
               <b id="cartbinFormatTitle">Format valid</b>
               <span class="format-sub"><i></i><em id="cartbinFormatSub">Verified</em></span>
             </span>
           </div>
-          <div class="syntax-kicker">Constructed syntax payload</div>
+          <div class="syntax-kicker">Site code</div>
           <div class="syntax-code" id="cartbinSyntax" aria-live="polite"></div>
         </div>
-        <div class="template-strip show-desktop">CRT-MAN1-N-Y-Z</div>
+        <div class="template-strip" id="cartbinTemplateStrip">Site template · CRT-MAN1-{cart}-{level}-{slot}</div>
 
         <div class="field" id="cartbin-xxx-field">
           <div class="field-label-row">
-            <label for="cartbin-xxx">
-              <span class="show-desktop">Cart number (N) · 1–999</span>
-              <span class="show-mobile">Cart number (N) · 1–999</span>
-            </label>
-            <span class="field-meta show-mobile">Fleet ID</span>
+            <label for="cartbin-xxx">Cart · <span id="cartbinRange">1–999</span></label>
           </div>
           <div class="stepper">
             <button type="button" class="step" data-step="-1" data-target="cartbin-xxx" aria-label="Decrease cart number">−</button>
@@ -199,22 +178,16 @@
 
         <div class="field">
           <div class="field-label-row">
-            <label>
-              <span class="show-desktop">Level (Y) · A–N</span>
-              <span class="show-mobile">Level (Y) · A–N vertical tier</span>
-            </label>
-            <span class="field-meta show-mobile">Selected: <b id="cartbinTierLabel">Tier A</b></span>
+            <label>Level · A–N</label>
+            <span class="field-meta">Selected: <b id="cartbinTierLabel">Level A</b></span>
           </div>
           <div class="btn-group" id="cartbin-y" data-value="A"></div>
         </div>
 
         <div class="field">
           <div class="field-label-row">
-            <label>
-              <span class="show-desktop">Bin slot (Z) · 1–6</span>
-              <span class="show-mobile">Bin slot (Z) · 1–6 position</span>
-            </label>
-            <span class="field-meta show-mobile">Selected: <b id="cartbinSlotLabel">Slot 1</b></span>
+            <label>Slot · 1–6</label>
+            <span class="field-meta">Selected: <b id="cartbinSlotLabel">Slot 1</b></span>
           </div>
           <div class="btn-group" id="cartbin-z" data-value="1"></div>
         </div>
@@ -225,24 +198,21 @@
         <div class="syntax-card">
           <div class="syntax-head">
             <span class="syntax-mark" aria-hidden="true"></span>
-            <span class="syntax-title" id="scanSyntaxTitle">Barcode scan encoder</span>
+            <span class="syntax-title" id="scanSyntaxTitle">Scan</span>
             <span class="format-badge is-valid" id="scanFormatBadge">
               <b id="scanFormatTitle">Format valid</b>
               <span class="format-sub"><i></i><em id="scanFormatSub">Verified</em></span>
             </span>
           </div>
-          <div class="syntax-kicker" id="scanSyntaxKicker">Decoded payload</div>
+          <div class="syntax-kicker" id="scanSyntaxKicker">Scanned code</div>
           <div class="syntax-code" id="scanSyntax" aria-live="polite"></div>
         </div>
         <div class="template-strip show-desktop" id="scanTemplateStrip">Decoded from camera</div>
 
         <div class="field">
           <div class="field-label-row">
-            <label>
-              <span class="show-desktop">Scan mode</span>
-              <span class="show-mobile">Scan mode · capture type</span>
-            </label>
-            <span class="field-meta show-mobile">Selected: <b id="scanModeLabel">Barcode</b></span>
+            <label>Scan mode</label>
+            <span class="field-meta">Selected: <b id="scanModeLabel">Barcode</b></span>
           </div>
           <div class="btn-group" id="scan-mode" data-value="barcode">
             <div class="opt selected" data-v="barcode">Barcode</div>
@@ -255,10 +225,7 @@
         <div id="scan-camera-block">
           <div class="field">
             <div class="field-label-row">
-              <label>
-                <span class="show-desktop">Camera</span>
-                <span class="show-mobile">Camera · live capture</span>
-              </label>
+              <label>Camera</label>
               <span class="field-meta show-mobile" id="scanCameraMeta">Idle</span>
             </div>
             <div class="btn-row scan-camera-row">
@@ -290,10 +257,7 @@
 
         <div class="field" id="scan-value-field">
           <div class="field-label-row">
-            <label for="scan-value">
-              <span class="show-desktop">Scanned value</span>
-              <span class="show-mobile">Scanned value · editable</span>
-            </label>
+            <label for="scan-value">Scanned value</label>
           </div>
           <input type="text" id="scan-value" placeholder="Decoded value appears here — or type it manually">
           <div class="err-msg">Enter or scan a value.</div>
@@ -333,7 +297,7 @@
         </div>
 
         <div class="tag-stage">
-          <div class="stage-scale" aria-hidden="true"><span>0.0 in</span><span>2.5 in</span></div>
+          <div class="stage-scale" aria-hidden="true"><span>0.0 in</span><span>3.0 in</span></div>
           <div class="tag">
             <div class="tag-top">
               <div class="tag-thermal">Racktag thermal</div>
@@ -348,7 +312,7 @@
               </div>
             </div>
           </div>
-          <div class="stage-height" aria-hidden="true">1.5 in</div>
+          <div class="stage-height" aria-hidden="true">2.0 in</div>
         </div>
         <div class="status-line" id="statusLine">Ready</div>
       </div>
@@ -366,7 +330,7 @@
           </h2>
           <div class="btn-row" style="margin:0;">
             <button class="btn secondary" id="clearSheetBtn" type="button">Clear</button>
-            <button class="btn" id="printBtn" type="button">
+            <button class="btn" id="printBtn" type="button" disabled title="Add a label before printing">
               <svg class="btn-glyph show-mobile" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V4h10v4"/><path d="M6 17H4v-5h16v5h-2"/><rect x="7" y="13" width="10" height="7"/></svg>
               <span class="show-desktop">Print sheet</span>
               <span class="show-mobile">Print batch</span>
@@ -382,10 +346,9 @@
 </div>
 
 <footer>
-  RACKTAG — generate, verify, print. Labels regenerate live as fields change.
   <label class="analytics-opt">
-    <input type="checkbox" id="analyticsOptIn" checked>
-    Save anonymous usage analytics to database
+    <input type="checkbox" id="analyticsOptIn">
+    Save anonymous usage on this device
   </label>
 </footer>
 
@@ -393,24 +356,30 @@
 <div id="printSheet"></div>
 
 <nav class="app-nav" aria-label="Label type">
-  <button type="button" class="app-nav-item active" data-tab="qr" aria-label="QR Generator">
+  <div class="live-code-bar" id="liveCodeBar">
+    <span class="live-code-kicker" id="liveCodeKicker">Custom</span>
+    <strong id="liveCodeValue">Enter a value</strong>
+  </div>
+  <div class="app-nav-row">
+  <button type="button" class="app-nav-item active" data-tab="qr" aria-label="Custom">
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="3" width="7" height="7" fill="currentColor" stroke="none"/><rect x="3" y="14" width="7" height="7" fill="currentColor" stroke="none"/><rect x="14" y="14" width="3" height="3" fill="currentColor" stroke="none"/><rect x="18" y="14" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="18" width="3" height="3" fill="currentColor" stroke="none"/><rect x="18" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg>
-    <span>QR Gen</span>
+    <span>Custom</span>
   </button>
-  <button type="button" class="app-nav-item" data-tab="bin" aria-label="Bin Location">
+  <button type="button" class="app-nav-item" data-tab="bin" aria-label="Bin">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8l8-4 8 4v12H4V8z"/><path d="M9 12h6v8H9z"/></svg>
-    <span>Bin Loc</span>
+    <span>Bin</span>
   </button>
-  <button type="button" class="app-nav-item" data-tab="cart" aria-label="Cart Number">
+  <button type="button" class="app-nav-item" data-tab="cart" aria-label="Cart">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 4h2l2.5 11h11l2-8H7"/></svg>
-    <span>Cart #</span>
+    <span>Cart</span>
   </button>
-  <button type="button" class="app-nav-item" data-tab="cartbin" aria-label="Cart Bin Number">
+  <button type="button" class="app-nav-item" data-tab="cartbin" aria-label="Cart bin">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v11H4z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/><path d="M4 12h16"/></svg>
-    <span>Bin #</span>
+    <span>Cart bin</span>
   </button>
-  <button type="button" class="app-nav-item" data-tab="scan" aria-label="From Barcode Photo">
+  <button type="button" class="app-nav-item" data-tab="scan" aria-label="Scan">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="13" r="3.2"/></svg>
     <span>Scan</span>
   </button>
+  </div>
 </nav>

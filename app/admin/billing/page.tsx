@@ -40,12 +40,9 @@ function BillingClient() {
         <li>Enterprise: custom annual + SSO, API, webhooks</li>
       </ul>
       <button type="button" onClick={startCheckout} disabled={loading}>
-        {loading ? "Redirecting…" : "Upgrade to Pro (Stripe)"}
+        {loading ? "Redirecting…" : "Upgrade to Pro"}
       </button>
-      {message ? <p style={{ marginTop: 12 }}>{message}</p> : null}
-      <p className="admin-muted" style={{ marginTop: 16 }}>
-        Set `STRIPE_SECRET_KEY`, `STRIPE_PRO_PRICE_ID`, and `STRIPE_WEBHOOK_SECRET` in Vercel env vars.
-      </p>
+      {message ? <p className="admin-message">{message}</p> : null}
     </section>
   );
 }

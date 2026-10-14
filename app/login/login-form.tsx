@@ -39,7 +39,7 @@ export function LoginForm({ next, initialError }: LoginFormProps) {
   return (
     <section className="admin-card" style={{ maxWidth: 420, margin: "80px auto" }}>
       <h1>RackTag Sign In</h1>
-      <p className="admin-muted">Enterprise accounts for audit logs, custom templates, and billing.</p>
+      <p className="admin-muted">Enterprise accounts for audit logs, templates, and billing.</p>
       <form onSubmit={onSubmit} className="admin-form">
         <label>
           Email
@@ -60,7 +60,7 @@ export function LoginForm({ next, initialError }: LoginFormProps) {
         </button>
       </form>
       <p className="admin-muted" style={{ marginTop: 16 }}>
-        SSO available on Enterprise plans when OIDC env vars are configured.
+        Single sign-on is available on the Enterprise plan.
       </p>
       <p style={{ marginTop: 12 }}>
         <a href="/api/auth/sso">Sign in with SSO</a> · <a href="/">Back to label app</a>

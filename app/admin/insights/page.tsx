@@ -15,12 +15,10 @@ export default async function InsightsPage() {
   return (
     <div className="admin-stack">
       <section className="admin-card">
-        <h1>Demand validation</h1>
-        <p className="admin-muted">
-          Phase 1 exit criteria: at least 1 pilot customer willing to pay $500+/month or $5k+ annual.
-        </p>
+        <h1>Usage</h1>
+        <p className="admin-muted">Labels, sessions, and scans from the last 30 days.</p>
         {!dbReady ? (
-          <p className="admin-error">Postgres is not configured. Connect Vercel Postgres to query usage_events.</p>
+          <p className="admin-error">Usage history is unavailable until the database is connected.</p>
         ) : (
           <>
             <div className="admin-metrics">

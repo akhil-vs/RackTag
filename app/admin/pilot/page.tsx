@@ -73,10 +73,8 @@ export default function PilotPage() {
   return (
     <div className="admin-stack">
       <section className="admin-card">
-        <h1>Paid pilot tracker</h1>
-        <p className="admin-muted">
-          Log enterprise interviews and track willingness to pay before major engineering investment.
-        </p>
+        <h1>Pilot</h1>
+        <p className="admin-muted">Log conversations with warehouses that may pay for RackTag.</p>
         <form className="admin-form" onSubmit={saveLead}>
           <label>
             Company
@@ -154,9 +152,9 @@ export default function PilotPage() {
       </section>
 
       <section className="admin-card">
-        <h2>Manual pilot activation</h2>
+        <h2>Activate pilot</h2>
         <p className="admin-muted">
-          Enable pilot tier (custom templates + audit export + 10k labels/month) before Stripe checkout.
+          Turn on the pilot plan for this organization: custom templates, audit export, and 10,000 labels a month.
         </p>
         <button type="button" onClick={activatePilot}>
           Activate pilot plan

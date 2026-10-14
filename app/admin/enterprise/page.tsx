@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { DEFAULT_TEMPLATES, parseOrgTemplates, type LabelTemplateConfig } from "@/lib/templates";
 
 type SettingsData = {
   org: {
@@ -16,7 +17,7 @@ export default function EnterprisePage() {
   const [webhookUrl, setWebhookUrl] = useState("");
   const [apiKeyName, setApiKeyName] = useState("WMS integration");
   const [newApiKey, setNewApiKey] = useState<string | null>(null);
-  const [templatesJson, setTemplatesJson] = useState("");
+  const [templates, setTemplates] = useState(fieldsFrom(DEFAULT_TEMPLATES));
   const [message, setMessage] = useState("");
 
   async function loadSettings() {
@@ -25,7 +26,7 @@ export default function EnterprisePage() {
     const json = await response.json();
     setData(json);
     setWebhookUrl(json.org?.webhookUrl ?? "");
-    setTemplatesJson(JSON.stringify(json.org?.customTemplates ?? {}, null, 2));
+    setTemplates(fieldsFrom(parseOrgTemplates(json.org?.customTemplates)));
   }
 
   useEffect(() => {
@@ -63,38 +64,88 @@ export default function EnterprisePage() {
     }
   }
 
+  function setTemplate<K extends keyof TemplateFields>(key: K, value: string) {
+    setTemplates((current) => ({ ...current, [key]: value }));
+  }
+
   async function onSaveTemplates(event: FormEvent) {
     event.preventDefault();
-    try {
-      const templates = JSON.parse(templatesJson);
-      await postAction({ action: "update_templates", templates });
-      setMessage("Custom label templates saved.");
-    } catch {
-      setMessage("Invalid JSON for templates.");
-    }
+    const saved = await postAction({ action: "update_templates", templates: configFrom(templates) });
+    if (saved) setMessage("Site templates saved. New labels use this pattern.");
   }
 
   return (
     <div className="admin-stack">
       <section className="admin-card">
-        <h1>Enterprise integrations</h1>
+        <h1>Integrations</h1>
         <p className="admin-muted">
-          SSO (OIDC), REST API, and WMS webhooks — enable after your first paying enterprise customer requests them.
+          Site label patterns, API keys, and a webhook for your warehouse system. Single sign-on is available on the Enterprise plan.
         </p>
         <ul className="admin-list">
           <li>
-            SSO: set `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, then use{" "}
-            <a href="/api/auth/sso">/api/auth/sso</a>
+            Single sign-on: <a href="/api/auth/sso">Sign in with SSO</a>
           </li>
-          <li>REST API: POST `/api/v1/labels` with `Authorization: Bearer rtk_…`</li>
-          <li>Webhooks: POST JSON payloads to your WMS endpoint on label events</li>
+          <li>API: create a key below, then send label requests with that key.</li>
+          <li>Webhook: RackTag posts label events to the address you save.</li>
         </ul>
       </section>
 
       <section className="admin-card">
-        <h2>Custom label templates</h2>
+        <h2>Site templates</h2>
+        <p className="admin-muted">
+          These patterns are what the label app builds. Use {"{aisle}"}, {"{level}"}, and {"{bin}"} for bin labels, {"{cart}"} for carts, and {"{level}"} plus {"{slot}"} for cart bins.
+        </p>
         <form className="admin-form" onSubmit={onSaveTemplates}>
-          <textarea value={templatesJson} onChange={(e) => setTemplatesJson(e.target.value)} rows={12} />
+          <label>
+            Bin pattern
+            <input value={templates.binPattern} onChange={(e) => setTemplate("binPattern", e.target.value)} />
+          </label>
+          <div className="admin-form-grid">
+            <label>
+              Aisle from
+              <input value={templates.binAisleMin} onChange={(e) => setTemplate("binAisleMin", e.target.value)} inputMode="numeric" />
+            </label>
+            <label>
+              Aisle to
+              <input value={templates.binAisleMax} onChange={(e) => setTemplate("binAisleMax", e.target.value)} inputMode="numeric" />
+            </label>
+            <label>
+              Bin from
+              <input value={templates.binIdMin} onChange={(e) => setTemplate("binIdMin", e.target.value)} inputMode="numeric" />
+            </label>
+            <label>
+              Bin to
+              <input value={templates.binIdMax} onChange={(e) => setTemplate("binIdMax", e.target.value)} inputMode="numeric" />
+            </label>
+          </div>
+          <label>
+            Cart pattern
+            <input value={templates.cartPattern} onChange={(e) => setTemplate("cartPattern", e.target.value)} />
+          </label>
+          <div className="admin-form-grid">
+            <label>
+              Cart from
+              <input value={templates.cartMin} onChange={(e) => setTemplate("cartMin", e.target.value)} inputMode="numeric" />
+            </label>
+            <label>
+              Cart to
+              <input value={templates.cartMax} onChange={(e) => setTemplate("cartMax", e.target.value)} inputMode="numeric" />
+            </label>
+          </div>
+          <label>
+            Cart bin pattern
+            <input value={templates.cartbinPattern} onChange={(e) => setTemplate("cartbinPattern", e.target.value)} />
+          </label>
+          <div className="admin-form-grid">
+            <label>
+              Cart bin from
+              <input value={templates.cartbinMin} onChange={(e) => setTemplate("cartbinMin", e.target.value)} inputMode="numeric" />
+            </label>
+            <label>
+              Cart bin to
+              <input value={templates.cartbinMax} onChange={(e) => setTemplate("cartbinMax", e.target.value)} inputMode="numeric" />
+            </label>
+          </div>
           <button type="submit">Save templates</button>
         </form>
       </section>
@@ -164,7 +215,98 @@ export default function EnterprisePage() {
         </table>
       </section>
 
-      {message ? <p>{message}</p> : null}
+      {message ? <p className="admin-message">{message}</p> : null}
     </div>
   );
+}
+
+type TemplateFields = {
+  binPattern: string;
+  binAisleMin: string;
+  binAisleMax: string;
+  binIdMin: string;
+  binIdMax: string;
+  cartPattern: string;
+  cartMin: string;
+  cartMax: string;
+  cartbinPattern: string;
+  cartbinMin: string;
+  cartbinMax: string;
+};
+
+function swapTokens(pattern: string, pairs: Array<[string, string]>) {
+  return pairs.reduce((out, [from, to]) => out.split(from).join(to), pattern);
+}
+
+function fieldsFrom(config: LabelTemplateConfig): TemplateFields {
+  return {
+    binPattern: swapTokens(config.bin.pattern, [
+      ["{xxx}", "{aisle}"],
+      ["{y}", "{level}"],
+      ["{zzzz}", "{bin}"],
+    ]),
+    binAisleMin: String(config.bin.validation.xxx.min),
+    binAisleMax: String(config.bin.validation.xxx.max),
+    binIdMin: String(config.bin.validation.zzzz.min),
+    binIdMax: String(config.bin.validation.zzzz.max),
+    cartPattern: swapTokens(config.cart.pattern, [["{xxx}", "{cart}"]]),
+    cartMin: String(config.cart.validation.xxx.min),
+    cartMax: String(config.cart.validation.xxx.max),
+    cartbinPattern: swapTokens(config.cartbin.pattern, [
+      ["{xxx}", "{cart}"],
+      ["{y}", "{level}"],
+      ["{z}", "{slot}"],
+    ]),
+    cartbinMin: String(config.cartbin.validation.xxx.min),
+    cartbinMax: String(config.cartbin.validation.xxx.max),
+  };
+}
+
+function wholeNumber(value: string, fallback: number) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) ? parsed : fallback;
+}
+
+function configFrom(fields: TemplateFields): LabelTemplateConfig {
+  return {
+    bin: {
+      pattern: swapTokens(fields.binPattern.trim(), [
+        ["{aisle}", "{xxx}"],
+        ["{level}", "{y}"],
+        ["{bin}", "{zzzz}"],
+      ]),
+      validation: {
+        xxx: {
+          min: wholeNumber(fields.binAisleMin, DEFAULT_TEMPLATES.bin.validation.xxx.min),
+          max: wholeNumber(fields.binAisleMax, DEFAULT_TEMPLATES.bin.validation.xxx.max),
+        },
+        zzzz: {
+          min: wholeNumber(fields.binIdMin, DEFAULT_TEMPLATES.bin.validation.zzzz.min),
+          max: wholeNumber(fields.binIdMax, DEFAULT_TEMPLATES.bin.validation.zzzz.max),
+        },
+      },
+    },
+    cart: {
+      pattern: swapTokens(fields.cartPattern.trim(), [["{cart}", "{xxx}"]]),
+      validation: {
+        xxx: {
+          min: wholeNumber(fields.cartMin, DEFAULT_TEMPLATES.cart.validation.xxx.min),
+          max: wholeNumber(fields.cartMax, DEFAULT_TEMPLATES.cart.validation.xxx.max),
+        },
+      },
+    },
+    cartbin: {
+      pattern: swapTokens(fields.cartbinPattern.trim(), [
+        ["{cart}", "{xxx}"],
+        ["{level}", "{y}"],
+        ["{slot}", "{z}"],
+      ]),
+      validation: {
+        xxx: {
+          min: wholeNumber(fields.cartbinMin, DEFAULT_TEMPLATES.cartbin.validation.xxx.min),
+          max: wholeNumber(fields.cartbinMax, DEFAULT_TEMPLATES.cartbin.validation.xxx.max),
+        },
+      },
+    },
+  };
 }
