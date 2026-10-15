@@ -1,6 +1,7 @@
 (function(){
-  // populate button-group selectors (levels A–N, bin slots 1–6)
+  // populate button-group selectors (levels A–N for bins, A–H for cart bins, slots 1–6)
   const letters = Array.from({length:14}, (_,i)=>String.fromCharCode(65+i)); // A–N
+  const cartbinLetters = Array.from({length:8}, (_,i)=>String.fromCharCode(65+i)); // A–H
   const slots = Array.from({length:6}, (_,i)=>String(i+1)); // 1–6
 
   function buildButtonGroup(id, values){
@@ -21,7 +22,7 @@
   }
 
   buildButtonGroup('bin-y', letters);
-  buildButtonGroup('cartbin-y', letters);
+  buildButtonGroup('cartbin-y', cartbinLetters);
   buildButtonGroup('cartbin-z', slots);
 
   const CART_BIN_COUNTS = {
