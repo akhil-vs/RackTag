@@ -395,8 +395,9 @@ if(window.caches){
     border-color:var(--yellow);
   }
   .btn-icon-toggle svg{
-    width:100%;
-    height:100%;
+    width:18px;
+    height:18px;
+    pointer-events:none;
   }
   .cart-face{
     border:1px solid var(--border);
@@ -2511,7 +2512,7 @@ if(window.caches){
         <div class="field" id="cartbin-xxx-field">
           <div class="field-label-row">
             <label for="cartbin-xxx">Cart · <span id="cartbinRange">1–139</span></label>
-            <button type="button" class="btn-icon-toggle" id="toggleVisualCart" aria-label="Toggle visual cart selection" title="Show visual cart grid">
+            <button type="button" class="btn-icon-toggle" id="toggleVisualCart" aria-label="Toggle visual cart selection" aria-pressed="false" title="Show visual cart grid">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="7" height="7" rx="1"/>
                 <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -2528,7 +2529,7 @@ if(window.caches){
           <div class="err-msg">Enter a whole number between 1 and 139.</div>
         </div>
 
-        <div class="field cart-map-field" id="cartbin-map-field" hidden style="display:none;">
+        <div class="field cart-map-field" id="cartbin-map-field" hidden>
           <div class="field-label-row">
             <label>Bins on this cart</label>
             <span class="field-meta">Selected: <b id="cartbinMapLabel">A-1</b></span>
@@ -2735,7 +2736,7 @@ if(window.caches){
   </div>
 </nav>
 
-<script src="/racktag.js?v=11"></script>
+<script src="/racktag.js?v=12"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

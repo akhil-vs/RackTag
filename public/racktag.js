@@ -145,14 +145,14 @@
     
     if(binField){
       binField.hidden = !showVisual;
-      binField.style.display = showVisual ? '' : 'none';
+      binField.style.removeProperty('display');
     }
     if(manual){
       manual.hidden = showVisual;
-      manual.style.display = showVisual ? 'none' : '';
+      manual.style.removeProperty('display');
     }
 
-    if(showBin && Number.isInteger(cartNumber)){
+    if(showVisual && Number.isInteger(cartNumber)){
       rebuildCartMapBins('cartbin-map', cartNumber);
       
       const yEl = document.getElementById('cartbin-y');
@@ -189,21 +189,23 @@
     refresh();
   });
 
-  const toggleVisualCartBtn = document.getElementById('toggleVisualCart');
-  if(toggleVisualCartBtn){
-    toggleVisualCartBtn.addEventListener('click', function(){
-      const cartInput = document.getElementById('cartbin-xxx');
-      const cartNumber = parseInt(cartInput.value, 10);
-      if(!cartInVisualRange('cartbin-xxx')){
-        alert('Visual cart selection is only available for carts 1-139 with configured bin layouts.');
-        return;
-      }
-      visualCartEnabled = !visualCartEnabled;
+  function setVisualCartEnabled(on){
+    visualCartEnabled = !!on;
+    const toggleVisualCartBtn = document.getElementById('toggleVisualCart');
+    if(toggleVisualCartBtn){
       toggleVisualCartBtn.classList.toggle('active', visualCartEnabled);
+      toggleVisualCartBtn.setAttribute('aria-pressed', visualCartEnabled ? 'true' : 'false');
       toggleVisualCartBtn.title = visualCartEnabled ? 'Hide visual cart grid' : 'Show visual cart grid';
-      syncCartMaps();
-    });
+    }
+    syncCartMaps();
   }
+
+  document.addEventListener('click', function(event){
+    const toggleVisualCartBtn = event.target && event.target.closest && event.target.closest('#toggleVisualCart');
+    if(!toggleVisualCartBtn) return;
+    event.preventDefault();
+    setVisualCartEnabled(!visualCartEnabled);
+  });
 
   const tabs = document.querySelectorAll('.tab, .app-nav-item');
   const panels = { bin:'panel-bin', cart:'panel-cart', cartbin:'panel-cartbin', scan:'panel-scan', qr:'panel-qr' };
