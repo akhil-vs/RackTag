@@ -132,15 +132,24 @@
     });
   }
 
+  let visualCartEnabled = false;
+
   function syncCartMaps(){
     const binField = document.getElementById('cartbin-map-field');
     const manual = document.getElementById('cartbin-manual');
     const cartInput = document.getElementById('cartbin-xxx');
     const cartNumber = parseInt(cartInput.value, 10);
-    const showBin = cartInVisualRange('cartbin-xxx');
+    const canShowVisual = cartInVisualRange('cartbin-xxx');
+    const showVisual = visualCartEnabled && canShowVisual;
     
-    if(binField) binField.hidden = !showBin;
-    if(manual) manual.hidden = showBin;
+    if(binField){
+      binField.hidden = !showVisual;
+      binField.style.display = showVisual ? '' : 'none';
+    }
+    if(manual){
+      manual.hidden = showVisual;
+      manual.style.display = showVisual ? 'none' : '';
+    }
 
     if(showBin && Number.isInteger(cartNumber)){
       rebuildCartMapBins('cartbin-map', cartNumber);
@@ -178,6 +187,22 @@
     selectGroupValue('cartbin-z', bin.slot);
     refresh();
   });
+
+  const toggleVisualCartBtn = document.getElementById('toggleVisualCart');
+  if(toggleVisualCartBtn){
+    toggleVisualCartBtn.addEventListener('click', function(){
+      const cartInput = document.getElementById('cartbin-xxx');
+      const cartNumber = parseInt(cartInput.value, 10);
+      if(!cartInVisualRange('cartbin-xxx')){
+        alert('Visual cart selection is only available for carts 1-139 with configured bin layouts.');
+        return;
+      }
+      visualCartEnabled = !visualCartEnabled;
+      toggleVisualCartBtn.classList.toggle('active', visualCartEnabled);
+      toggleVisualCartBtn.title = visualCartEnabled ? 'Hide visual cart grid' : 'Show visual cart grid';
+      syncCartMaps();
+    });
+  }
 
   const tabs = document.querySelectorAll('.tab, .app-nav-item');
   const panels = { bin:'panel-bin', cart:'panel-cart', cartbin:'panel-cartbin', scan:'panel-scan', qr:'panel-qr' };
