@@ -45,7 +45,15 @@
     // Carts 95-104: 10 bins
     95: 10, 96: 10, 97: 10, 98: 10, 99: 10, 100: 10, 101: 10, 102: 10, 103: 10, 104: 10,
     // Carts 105-116: 16 bins
-    105: 16, 106: 16, 107: 16, 108: 16, 109: 16, 110: 16, 111: 16, 112: 16, 113: 16, 114: 16, 115: 16, 116: 16
+    105: 16, 106: 16, 107: 16, 108: 16, 109: 16, 110: 16, 111: 16, 112: 16, 113: 16, 114: 16, 115: 16, 116: 16,
+    // Carts 117-122: 25 bins
+    117: 25, 118: 25, 119: 25, 120: 25, 121: 25, 122: 25,
+    // Carts 123-127: 10 bins
+    123: 10, 124: 10, 125: 10, 126: 10, 127: 10,
+    // Carts 128-134: 25 bins
+    128: 25, 129: 25, 130: 25, 131: 25, 132: 25, 133: 25, 134: 25,
+    // Carts 135-139: 20 bins
+    135: 20, 136: 20, 137: 20, 138: 20, 139: 20
   };
 
   function getGridLayout(binCount){
@@ -55,6 +63,7 @@
     if(binCount === 18) return { rows: 3, cols: 6 };
     if(binCount === 20) return { rows: 4, cols: 5 };
     if(binCount === 24) return { rows: 4, cols: 6 };
+    if(binCount === 25) return { rows: 5, cols: 5 };
     if(binCount === 30) return { rows: 5, cols: 6 };
     if(binCount === 48) return { rows: 8, cols: 6 };
     return { rows: 2, cols: 3 };
@@ -78,7 +87,7 @@
 
   function cartInVisualRange(inputId){
     const n = parseInt(document.getElementById(inputId).value, 10);
-    return Number.isInteger(n) && n >= 1 && n <= 116 && CART_BIN_COUNTS[n];
+    return Number.isInteger(n) && n >= 1 && n <= 139 && CART_BIN_COUNTS[n];
   }
 
   function buildCartMap(id, onPick){
@@ -225,8 +234,8 @@
 
   const DEFAULT_TEMPLATES = {
     bin: { pattern: 'P-01-A-{xxx}-{y}-{zzzz}', validation: { xxx: { min: 101, max: 113 }, zzzz: { min: 1000, max: 1999 } } },
-    cart: { pattern: 'CRT-MAN1-{xxx}', validation: { xxx: { min: 1, max: 116 } } },
-    cartbin: { pattern: 'CRT-MAN1-{xxx}-{y}-{z}', validation: { xxx: { min: 1, max: 116 } } }
+    cart: { pattern: 'CRT-MAN1-{xxx}', validation: { xxx: { min: 1, max: 139 } } },
+    cartbin: { pattern: 'CRT-MAN1-{xxx}-{y}-{z}', validation: { xxx: { min: 1, max: 139 } } }
   };
 
   let orgTemplates = null;
