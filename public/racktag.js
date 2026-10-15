@@ -1356,7 +1356,7 @@
       div.appendChild(rm);
       div.appendChild(codeEl);
       sheetGrid.appendChild(div);
-      renderQR(holder, item.code, 100);
+      renderQR(holder, item.code, 180);
     });
 
     // build hidden print layout
